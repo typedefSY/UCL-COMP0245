@@ -1,5 +1,5 @@
 import numpy as np
-import time
+# import time
 import os
 import matplotlib.pyplot as plt
 from simulation_and_control import pb, MotorCommands, PinWrapper, feedback_lin_ctrl, SinusoidalReference
@@ -88,7 +88,7 @@ def main():
         
         current_time += time_step
         # Optional: print current time
-        print(f"Current time in seconds: {current_time:.2f}")
+        # print(f"Current time in seconds: {current_time:.2f}")
 
     print("\033[92m====== Data collection finished. Starting the identification process ======\033[0m")
     # Stack all the regressors and all the torques, and compute the parameters 'a' using pseudoinverse
@@ -110,6 +110,7 @@ def main():
     # Compute the adjusted R-squared value
     tss = np.sum((tau_mes_all_flat - np.mean(tau_mes_all_flat))**2)
     rss = np.sum((tau_mes_all_flat - tau_pred_all_flat)**2)
+    print(f":rss: {rss}")
     r_squared = 1 - rss/tss
     print(f"R-squared for the linear model: {r_squared}")
     print("\033[92m===========================================================================\033[0m")
@@ -127,31 +128,58 @@ def main():
     
     # Compute the covariance matrix of the parameter estimates
     XTX_inv = np.linalg.pinv(regressor_all.T @ regressor_all)
-    param_var = sigma_squared * XTX_inv  # Covariance matrix of parameters
-    param_se = np.sqrt(np.abs(np.diag(param_var)))  # Standard errors of parameters
+    # Covariance matrix of parameters
+    param_var = sigma_squared * XTX_inv
+    # Deal with negative variances due to numerical errors
+    diag_elements = np.diag(param_var).copy()
+    for i in range(len(diag_elements)):
+        if diag_elements[i] < 0:
+            diag_elements[i] = 0
+    # Standard errors of parameters
+    param_se = np.sqrt(diag_elements)
 
     # Compute confidence intervals for parameters
-    lower_bounds = a - 2 * param_se
-    upper_bounds = a + 2 * param_se
+    lower_bounds_a = a - 1.96 * param_se
+    upper_bounds_a = a + 1.96 * param_se
     
-    # Display confidence intervals
+    # Display confidence intervals of the parameters
     for i in range(len(a)):
-        print(f"Parameter {i+1}: Estimate = {a[i]:.4f}, 95% CI = [{lower_bounds[i]:.4f}, {upper_bounds[i]:.4f}]")
+        print(f"Parameter {i+1}: Estimate = {a[i]:.4f}, 95% CI = [{lower_bounds_a[i]:.4f}, {upper_bounds_a[i]:.4f}]")
     
-    print("\033[92m===========================================================================\033[0m")
+    # Compute confidence intervals for the prediction
+    s_y_pred = np.sqrt(np.sum((regressor_all @ XTX_inv) * regressor_all, axis=1) * sigma_squared)
+    
+    lower_bounds_pred = tau_pred_all_flat - 1.96 * s_y_pred
+    upper_bounds_pred = tau_pred_all_flat + 1.96 * s_y_pred
+    
     # Plot the torque prediction error for each joint
-
-    # Reshape tau_pred_all_flat to match tau_mes_all shape
     tau_pred_all = tau_pred_all_flat.reshape(-1, num_joints)  # Shape (N, 7)
+    tau_mes_all = tau_mes_all_flat.reshape(-1, num_joints)
+    # Compute the confidence intervals for the prediction
+    lower_bounds_pred = lower_bounds_pred.reshape(-1, num_joints)
+    upper_bounds_pred = upper_bounds_pred.reshape(-1, num_joints)
+    
+    samples = np.arange(n/7)
+    _, axs = plt.subplots(num_joints, 1, figsize=(10, 15))
+    for i in range(num_joints):
+        axs[i].plot(samples, tau_mes_all[:, i], 'r--', label='Measured Torque')
+        axs[i].plot(samples, tau_pred_all[:, i], 'b-', label='Predicted Torque')
+        axs[i].fill_between(samples, lower_bounds_pred[:, i], upper_bounds_pred[:, i], color='grey', alpha=0.5, label='95% Confidence Interval')
+        axs[i].set_title(f'Joint {i+1} Torque Prediction and 95% Confidence Interval')
+        axs[i].set_xlabel('Time (s)')
+        axs[i].set_ylabel('Torque (Nm)')
+        axs[i].grid(True)
+    plt.tight_layout()
+    plt.show()
+        
+    print("\033[92m===========================================================================\033[0m")
     # Compute the error
     error_all = tau_mes_all - tau_pred_all  # Shape (N, 7)
-    # Create time vector
-    N = tau_mes_all.shape[0]
-    t = np.linspace(0, N * time_step, N)
+    print(f"Error shape: {error_all.shape}")
     # Plot the error for each joint
     _, axs = plt.subplots(num_joints, 1, figsize=(10, 15))
     for i in range(num_joints):
-        axs[i].plot(t, error_all[:, i])
+        axs[i].plot(samples, error_all[:, i])
         axs[i].set_title(f'Torque Prediction Error for Joint {i+1}')
         axs[i].set_xlabel('Time (s)')
         axs[i].set_ylabel('Torque Error (Nm)')
