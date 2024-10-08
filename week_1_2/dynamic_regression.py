@@ -90,7 +90,7 @@ def main():
         # Optional: print current time
         # print(f"Current time in seconds: {current_time:.2f}")
 
-    print("\033[92m====== Data collection finished. Starting the identification process ======\033[0m")
+    print("\033[92m=============================== Compute 'a' ===============================\033[0m")
     # Stack all the regressors and all the torques, and compute the parameters 'a' using pseudoinverse
     regressor_all = np.vstack(regressor_all)  # Shape (N*7, p(features))
     print(f"Regressor shape: {regressor_all.shape}")
@@ -99,33 +99,25 @@ def main():
     tau_mes_all_flat = tau_mes_all.flatten()  # Shape (N*7,)
     a = np.linalg.pinv(regressor_all) @ tau_mes_all_flat 
     print(f"Parameters 'a' for the linear model:\n{a}")
-    print("\033[92m===========================================================================\033[0m")
-    
-    # Compute the metrics for the linear model
+    print("\033[92m==================================== MSE ==================================\033[0m")
     tau_pred_all_flat = regressor_all @ a     # Shape (N*7,)
     mse = np.mean((tau_mes_all_flat - tau_pred_all_flat)**2)
     print(f"MSE for the linear model:{mse}")
-    print("\033[92m===========================================================================\033[0m")
-    
-    # Compute the adjusted R-squared value
+    print("\033[92m================================= R-squared ===============================\033[0m")
     tss = np.sum((tau_mes_all_flat - np.mean(tau_mes_all_flat))**2)
     rss = np.sum((tau_mes_all_flat - tau_pred_all_flat)**2)
     print(f":rss: {rss}")
     r_squared = 1 - rss/tss
     print(f"R-squared for the linear model: {r_squared}")
-    print("\033[92m===========================================================================\033[0m")
-    
-    # Compute the F-statistic
+    print("\033[92m================================= F-statistic =============================\033[0m")
     n = tau_mes_all_flat.shape[0]
     print(f"Number of samples: {n}")
     p = a.shape[0]
     f_stat = (tss - rss)/(rss/(n-p-1))
     print(f"F-statistic for the linear model: {f_stat}")
-    print("\033[92m===========================================================================\033[0m")
-    # Compute the confidence intervals for the parameters and for the prediction
+    print("\033[92m================= Confidence intervals of the parameters ==================\033[0m")
     # Estimate variance of the residuals
     sigma_squared = rss / (n - p)
-    
     # Compute the covariance matrix of the parameter estimates
     XTX_inv = np.linalg.pinv(regressor_all.T @ regressor_all)
     # Covariance matrix of parameters
@@ -137,15 +129,14 @@ def main():
             diag_elements[i] = 0
     # Standard errors of parameters
     param_se = np.sqrt(diag_elements)
-
     # Compute confidence intervals for parameters
     lower_bounds_a = a - 1.96 * param_se
     upper_bounds_a = a + 1.96 * param_se
-    
-    # Display confidence intervals of the parameters
+    # Print confidence intervals of the parameters
     for i in range(len(a)):
         print(f"Parameter {i+1}: Estimate = {a[i]:.4f}, 95% CI = [{lower_bounds_a[i]:.4f}, {upper_bounds_a[i]:.4f}]")
     
+    ##################################################################################################
     # Compute confidence intervals for the prediction
     s_y_pred = np.sqrt(np.sum((regressor_all @ XTX_inv) * regressor_all, axis=1) * sigma_squared)
     
@@ -160,12 +151,24 @@ def main():
     upper_bounds_pred = upper_bounds_pred.reshape(-1, num_joints)
     
     samples = np.arange(n/7)
+    # Plot the predicted torque and the measured torque for each joint
     _, axs = plt.subplots(num_joints, 1, figsize=(10, 15))
     for i in range(num_joints):
-        axs[i].plot(samples, tau_mes_all[:, i], 'r--', label='Measured Torque')
-        axs[i].plot(samples, tau_pred_all[:, i], 'b-', label='Predicted Torque')
-        axs[i].fill_between(samples, lower_bounds_pred[:, i], upper_bounds_pred[:, i], color='grey', alpha=0.5, label='95% Confidence Interval')
-        axs[i].set_title(f'Joint {i+1} Torque Prediction and 95% Confidence Interval')
+        axs[i].plot(samples, tau_mes_all[:, i], 'r-', label='Measured Torque', linewidth=2)
+        axs[i].plot(samples, tau_pred_all[:, i], 'b-', label='Predicted Torque', linewidth=1)
+        axs[i].fill_between(samples, lower_bounds_pred[:, i], upper_bounds_pred[:, i], color='green', label='95% Confidence Interval')
+        axs[i].set_title(f'Joint {i+1} Predicted Torque and Measured Torque')
+        axs[i].set_xlabel('Time (s)')
+        axs[i].set_ylabel('Torque (Nm)')
+        axs[i].grid(True)
+    plt.tight_layout()
+    plt.show()
+    
+    # Plot Confidence intervals for the prediction of each joint
+    _, axs = plt.subplots(num_joints, 1, figsize=(10, 15))
+    for i in range(num_joints):
+        axs[i].fill_between(samples, lower_bounds_pred[:, i], upper_bounds_pred[:, i], color='green', label='95% Confidence Interval')
+        axs[i].set_title(f'Joint {i+1} 95% Confidence Interval')
         axs[i].set_xlabel('Time (s)')
         axs[i].set_ylabel('Torque (Nm)')
         axs[i].grid(True)
@@ -175,7 +178,6 @@ def main():
     print("\033[92m===========================================================================\033[0m")
     # Compute the error
     error_all = tau_mes_all - tau_pred_all  # Shape (N, 7)
-    print(f"Error shape: {error_all.shape}")
     # Plot the error for each joint
     _, axs = plt.subplots(num_joints, 1, figsize=(10, 15))
     for i in range(num_joints):
