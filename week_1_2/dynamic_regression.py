@@ -90,7 +90,7 @@ def main():
         # Optional: print current time
         # print(f"Current time in seconds: {current_time:.2f}")
 
-    print("\033[92m=============================== Compute 'a' ===============================\033[0m")
+    print("\033[92m=============================== Parameters ================================\033[0m")
     # Stack all the regressors and all the torques, and compute the parameters 'a' using pseudoinverse
     regressor_all = np.vstack(regressor_all)  # Shape (N*7, p(features))
     print(f"Regressor shape: {regressor_all.shape}")
@@ -154,14 +154,19 @@ def main():
     # Plot the predicted torque and the measured torque for each joint
     _, axs = plt.subplots(num_joints, 1, figsize=(10, 15))
     for i in range(num_joints):
-        axs[i].plot(samples, tau_mes_all[:, i], 'r-', label='Measured Torque', linewidth=2)
+        axs[i].plot(samples, tau_mes_all[:, i], 'r-', label='Measured Torque', linewidth=1)
         axs[i].plot(samples, tau_pred_all[:, i], 'b-', label='Predicted Torque', linewidth=1)
+        axs[i].legend()
         axs[i].fill_between(samples, lower_bounds_pred[:, i], upper_bounds_pred[:, i], color='green', label='95% Confidence Interval')
         axs[i].set_title(f'Joint {i+1} Predicted Torque and Measured Torque')
         axs[i].set_xlabel('Time (s)')
         axs[i].set_ylabel('Torque (Nm)')
         axs[i].grid(True)
     plt.tight_layout()
+    # !Uncomment the following lines to save the plot
+    # if not os.path.exists("images/noise_0.0001/"):
+    #     os.makedirs("images/noise_0.0001/")
+    # plt.savefig(f"images/noise_0.0001/prediction_measured.png")
     plt.show()
     
     # Plot Confidence intervals for the prediction of each joint
@@ -173,6 +178,10 @@ def main():
         axs[i].set_ylabel('Torque (Nm)')
         axs[i].grid(True)
     plt.tight_layout()
+    # !Uncomment the following lines to save the plot
+    # if not os.path.exists("images/noise_0.0001/"):
+    #     os.makedirs("images/noise_0.0001/")
+    # plt.savefig(f"images/noise_0.0001/prediction_confidence_interval.png")
     plt.show()
         
     print("\033[92m===========================================================================\033[0m")
@@ -187,6 +196,10 @@ def main():
         axs[i].set_ylabel('Torque Error (Nm)')
         axs[i].grid(True)
     plt.tight_layout()
+    # !Uncomment the following lines to save the plot
+    # if not os.path.exists("images/noise_0.0001/"):
+    #     os.makedirs("images/noise_0.0001/")
+    # plt.savefig(f"images/noise_0.0001/error.png")
     plt.show()
     
 
