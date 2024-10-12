@@ -192,7 +192,7 @@ def main():
     for i in range(num_joints):
         axs[i].plot(samples, error_all[:, i])
         axs[i].set_title(f'Torque Prediction Error for Joint {i+1}')
-        axs[i].set_xlabel('Time (s)')
+        axs[i].set_xlabel('Time Steps')
         axs[i].set_ylabel('Torque Error (Nm)')
         axs[i].grid(True)
     plt.tight_layout()
