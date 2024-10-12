@@ -63,9 +63,9 @@ plt.ylim(bottom=0)
 
 plt.tight_layout()
 # !Uncomment the following lines to save the plot
-if not os.path.exists("images/"):
-      os.makedirs("images/")
-plt.savefig(f"images/Ex4_Boost_Max_Depth.png")
+# if not os.path.exists("images/"):
+#       os.makedirs("images/")
+# plt.savefig(f"images/Ex4_Boost_Max_Depth.png")
 plt.show()
 
 print("\033[92m======================= Bagging Regressor =========================\033[0m")
@@ -95,5 +95,5 @@ plt.ylabel('Frequency')
 plt.grid(True)
 
 # !Uncomment the following lines to save the plot
-plt.savefig(f"images/Ex4_Boost_Prediction_with_Error.png")
+# plt.savefig(f"images/Ex4_Boost_Prediction_with_Error.png")
 plt.show()
