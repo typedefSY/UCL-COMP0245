@@ -132,7 +132,7 @@ max_r2 = 0
 degrees_list = []
 mse_list = []
 r2_list = []
-for i in range(1, 50):
+for i in range(1, 30):
       # print current degree, optional
       # print(f"Current Degree: {i}")
       poly = PolynomialFeatures(degree=i)
