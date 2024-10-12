@@ -107,7 +107,7 @@ plt.ylim(bottom=0)
 plt.tight_layout()
 if not os.path.exists("images/"):
       os.makedirs("images/")
-plt.savefig(f"images/DT_Hyper_Parameters.png")
+plt.savefig(f"images/Ex1_DT_Hyper_Parameters.png")
 plt.show()
 
 if best_mse_best < best_mse_random:
@@ -191,7 +191,7 @@ plt.title('Polynomial Regression: R2 vs Degree')
 plt.xlabel('Degree')
 plt.ylabel('R2')
 plt.tight_layout()
-plt.savefig(f"images/PR_Degrees.png")
+plt.savefig(f"images/Ex1_PR_Degrees.png")
 plt.show()
 
 # Plot the both Polynomial and Decision Tree regressions
@@ -214,5 +214,5 @@ plt.ylabel('Predicted Values')
 plt.legend()
 
 plt.tight_layout()
-plt.savefig(f"images/DT_PR_Comparison.png")
+plt.savefig(f"images/Ex1_DT_PR_Comparison.png")
 plt.show()
