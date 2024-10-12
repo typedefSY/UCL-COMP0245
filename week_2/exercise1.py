@@ -123,7 +123,7 @@ y_pred = tree.predict(X_test)
 r2 = r2_score(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
 print("\033[92m=============================== DT ================================\033[0m")
-print(f"Decision Tree with best max_depth: {max_depth} and spliter: {spliter}.  MSE: {mse}, R2 score: {r2}")
+print(f"Decision Tree with best max_depth: {best_max_depth} and spliter: {best_spliter}.\nMinimum MSE:: {mse}, Maximum R2: {r2}")
 print("\033[92m===================================================================\033[0m")
 
 # Polynomial Regression, find the best degree
@@ -153,7 +153,7 @@ for i in range(1, 50):
       r2_list.append(r2_poly)
 
 print("\033[92m=============================== PR ================================\033[0m")
-print(f"Minimum MSE: {min_mse}, maximum R2: {max_r2}, best degree: {best_degree}")
+print(f"Polynomial Regressor with best degree: {best_degree}\nMinimum MSE: {min_mse}, Maximum R2: {max_r2}")
 print("\033[92m===================================================================\033[0m")
 poly = PolynomialFeatures(degree=best_degree)
 poly.fit(X_train)
@@ -198,7 +198,7 @@ plt.show()
 plt.figure(figsize=(12, 6))
 
 plt.subplot(1, 2, 1)
-plt.scatter(y_test, y_pred, edgecolors='k', s=20, label='Decision Tree')
+plt.scatter(y_test, y_pred, edgecolors='k', s=15, label='Decision Tree')
 plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
 plt.title('Decision Tree: Predicted vs Actual')
 plt.xlabel('Actual Values')
