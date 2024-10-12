@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error, r2_score
+import os
 
 # Generate or reuse synthetic data
 # Generate synthetic data
@@ -21,3 +22,78 @@ X = np.vstack((x1, x2)).T
 # Split data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
+mse_list = []
+r2_list = []
+max_depth_list = []
+best_mse = 1
+best_max_depth = 0
+best_r2 = 0
+for i in range(3, 20):
+      max_depth = i
+      boost_regressor = AdaBoostRegressor(estimator=DecisionTreeRegressor(max_depth=max_depth), n_estimators=50, random_state=42)
+      boost_regressor.fit(X_train, y_train)
+      y_pred = boost_regressor.predict(X_test)
+      r2 = r2_score(y_test, y_pred)
+      mse = mean_squared_error(y_test, y_pred)
+      if mse < best_mse:
+            best_mse = mse
+            best_r2 = r2
+            best_max_depth = max_depth
+      mse_list.append(mse)
+      r2_list.append(r2)
+      max_depth_list.append(max_depth)
+plt.figure(figsize=(12, 6))
+# fig 1
+plt.subplot(1, 2, 1)
+plt.plot(max_depth_list, mse_list, color='r')
+plt.title('Boost regressor: MSE vs Max Depth')
+plt.xlabel('Max Depth')
+plt.ylabel('MSE')
+plt.xlim(left=3)
+plt.ylim(bottom=0)
+
+# fig 2
+plt.subplot(1, 2, 2)
+plt.plot(max_depth_list, r2_list, color='b')
+plt.title('Boost regressor: R2 vs Max Depth')
+plt.xlabel('Max Depth')
+plt.ylabel('R2')
+plt.xlim(left=3)
+plt.ylim(bottom=0)
+
+plt.tight_layout()
+# !Uncomment the following lines to save the plot
+if not os.path.exists("images/"):
+      os.makedirs("images/")
+plt.savefig(f"images/Ex4_Boost_Max_Depth.png")
+plt.show()
+
+print("\033[92m======================= Bagging Regressor =========================\033[0m")
+print(f"Boost Regressor with Decision Tree (max_depth={best_max_depth}) base estimator\nMinimum MSE: {best_mse}, Maximum R2 score: {best_r2}")
+print("\033[92m===================================================================\033[0m")
+
+boost_regressor = AdaBoostRegressor(estimator=DecisionTreeRegressor(max_depth=best_max_depth), n_estimators=50, random_state=42)
+boost_regressor.fit(X_train, y_train)
+y_pred = boost_regressor.predict(X_test)
+
+errors = y_pred - y_test
+
+# Plot the results
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.scatter(y_test, y_pred, edgecolors='k', s=15, label='Bagging Decision Tree Regressor')
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
+plt.title(f'Boost Regressor: Predicted vs Actual, MSE = {best_mse:.4f}, R2 = {best_r2:.4f}')
+plt.xlabel('Actual Values')
+plt.ylabel('Predicted Values')
+
+plt.subplot(1, 2, 2)
+plt.hist(errors, bins=200, color='red')
+plt.title('Error Distribution of Boost Regressor')
+plt.xlabel('Prediction Error')
+plt.ylabel('Frequency')
+plt.grid(True)
+
+# !Uncomment the following lines to save the plot
+plt.savefig(f"images/Ex4_Boost_Prediction_with_Error.png")
+plt.show()
