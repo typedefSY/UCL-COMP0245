@@ -59,7 +59,8 @@ plt.title(f'Optimized Random Forest: Predicted vs Actual, MSE = {mse:.4f}, R2 = 
 plt.xlabel('Actual Values')
 plt.ylabel('Predicted Values')
 plt.legend()
-if not os.path.exists("images/"):
-    os.makedirs("images/")
-plt.savefig("images/Ex3_RF_Prediction.png")
+# !Uncomment the following lines to save the plot
+# if not os.path.exists("images/"):
+#     os.makedirs("images/")
+# plt.savefig("images/Ex3_RF_Prediction.png")
 plt.show()

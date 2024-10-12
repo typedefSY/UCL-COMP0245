@@ -62,9 +62,10 @@ plt.xlim(left=3)
 plt.ylim(bottom=0)
 
 plt.tight_layout()
-if not os.path.exists("images/"):
-      os.makedirs("images/")
-plt.savefig(f"images/Ex2_Bagging_Max_Depth.png")
+# !Uncomment the following lines to save the plot
+# if not os.path.exists("images/"):
+#       os.makedirs("images/")
+# plt.savefig(f"images/Ex2_Bagging_Max_Depth.png")
 plt.show()
 
 print("\033[92m======================= Bagging Regressor =========================\033[0m")
@@ -83,5 +84,6 @@ plt.title(f'Bagging Regressor: Predicted vs Actual, MSE = {best_mse:.4f}, R2 = {
 plt.xlabel('Actual Values')
 plt.ylabel('Predicted Values')
 plt.legend()
-plt.savefig(f"images/Ex2_Bagging_Prediction.png")
+# !Uncomment the following lines to save the plot
+# plt.savefig(f"images/Ex2_Bagging_Prediction.png")
 plt.show()
