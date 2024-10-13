@@ -138,10 +138,10 @@ def main():
     
     ##################################################################################################
     # Compute confidence intervals for the prediction
-    s_y_pred = np.sqrt(np.sum((regressor_all @ XTX_inv) * regressor_all, axis=1) * sigma_squared)
-    
-    lower_bounds_pred = tau_pred_all_flat - 1.96 * s_y_pred
-    upper_bounds_pred = tau_pred_all_flat + 1.96 * s_y_pred
+    residuals = tau_mes_all_flat - tau_pred_all_flat
+    std_residuals = np.std(residuals)
+    lower_bounds_pred = tau_pred_all_flat - 1.96 * std_residuals
+    upper_bounds_pred = tau_pred_all_flat + 1.96 * std_residuals
     
     # Plot the torque prediction error for each joint
     tau_pred_all = tau_pred_all_flat.reshape(-1, num_joints)  # Shape (N, 7)
@@ -157,7 +157,6 @@ def main():
         axs[i].plot(samples, tau_mes_all[:, i], 'r-', label='Measured Torque', linewidth=1)
         axs[i].plot(samples, tau_pred_all[:, i], 'b-', label='Predicted Torque', linewidth=1)
         axs[i].legend()
-        axs[i].fill_between(samples, lower_bounds_pred[:, i], upper_bounds_pred[:, i], color='green', label='95% Confidence Interval')
         axs[i].set_title(f'Joint {i+1} Predicted Torque and Measured Torque')
         axs[i].set_xlabel('Time (s)')
         axs[i].set_ylabel('Torque (Nm)')
