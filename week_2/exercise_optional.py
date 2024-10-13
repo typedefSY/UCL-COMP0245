@@ -17,41 +17,14 @@ print(feature_names)
 # Split data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-# Initialize the RandomForestRegressor
-random_forest = RandomForestRegressor(max_depth=30, random_state=42)
-random_forest.fit(X_train, y_train)
-
-# Best estimator found by RandomizedSearch
-print("\033[92m========================= Random Forest ===========================\033[0m")
-# Predict using the best model
-y_pred = random_forest.predict(X_test)
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
-# log output
-print(f"Optimized Random Forest: MSE = {mse:.4f}, R2 = {r2:.4f}")
-print("\033[92m===================================================================\033[0m")
-
-# Plot the results
-plt.figure(figsize=(12, 6))
-plt.scatter(y_test, y_pred, edgecolors='k', s=15, label='Random Forest Regressor Predictions')
-plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
-plt.title(f'Random Forest: Predicted vs Actual, MSE = {mse:.4f}, R2 = {r2:.4f}')
-plt.xlabel('Actual Values')
-plt.ylabel('Predicted Values')
-plt.legend()
-# !Uncomment the following lines to save the plot
-if not os.path.exists("images/"):
-    os.makedirs("images/")
-plt.savefig("images/Ex5_RF_Prediction.png")
-plt.show()
-
+###################################### Polynomial Regression ######################################
 # Polynomial Regression, find the best degree
 min_mse = 1
 max_r2 = 0
 degrees_list = []
 mse_list = []
 r2_list = []
-for i in range(1, 35):
+for i in range(1, 5):
       # print current degree, optional
       print(f"Current Degree: {i}")
       poly = PolynomialFeatures(degree=i)
@@ -71,7 +44,7 @@ for i in range(1, 35):
       mse_list.append(mse_poly)
       r2_list.append(r2_poly)
 
-print("\033[92m=============================== PR ================================\033[0m")
+print("\033[92m============================== PR =================================\033[0m")
 print(f"Polynomial Regressor with best degree: {best_degree}\nMinimum MSE: {min_mse}, Maximum R2: {max_r2}")
 print("\033[92m===================================================================\033[0m")
 poly = PolynomialFeatures(degree=best_degree)
@@ -111,5 +84,47 @@ plt.xlabel('Degree')
 plt.ylabel('R2')
 plt.tight_layout()
 # !Uncomment the following lines to save the plot
-plt.savefig(f"images/Ex5_PR_Degrees.png")
+# if not os.path.exists("images/"):
+#     os.makedirs("images/")
+# plt.savefig(f"images/Ex5_PR_Degrees.png")
+plt.show()
+
+plt.figure(figsize=(12, 6))
+plt.scatter(y_test, y_pred_poly, edgecolors='k', s=15, label='Polynomial Regression')
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
+plt.title(f'Polynomial Regression: Predicted vs Actual, MSE = {min_mse:.4f}, R2 = {max_r2:.4f}')
+plt.xlabel('Actual Values')
+plt.ylabel('Predicted Values')
+plt.legend()
+
+plt.tight_layout()
+# !Uncomment the following lines to save the plot
+# plt.savefig("images/Ex5_PR_Prediction.png")
+plt.show()
+
+###################################### Random Forest ######################################
+# Initialize the RandomForestRegressor
+random_forest = RandomForestRegressor(max_depth=30, random_state=42)
+random_forest.fit(X_train, y_train)
+
+# Best estimator found by RandomizedSearch
+print("\033[92m========================= Random Forest ===========================\033[0m")
+# Predict using the best model
+y_pred = random_forest.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+# log output
+print(f"Optimized Random Forest: MSE = {mse:.4f}, R2 = {r2:.4f}")
+print("\033[92m===================================================================\033[0m")
+
+# Plot the results
+plt.figure(figsize=(12, 6))
+plt.scatter(y_test, y_pred, edgecolors='k', s=15, label='Random Forest Regressor Predictions')
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
+plt.title(f'Random Forest: Predicted vs Actual, MSE = {mse:.4f}, R2 = {r2:.4f}')
+plt.xlabel('Actual Values')
+plt.ylabel('Predicted Values')
+plt.legend()
+# !Uncomment the following lines to save the plot
+# plt.savefig("images/Ex5_RF_Prediction.png")
 plt.show()
