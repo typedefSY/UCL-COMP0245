@@ -122,5 +122,5 @@ plt.xlabel('Actual Values')
 plt.ylabel('Predicted Values')
 plt.legend()
 # !Uncomment the following lines to save the plot
-plt.savefig("images/Ex5_Comparison.png")
+# plt.savefig("images/Ex5_Comparison.png")
 plt.show()
