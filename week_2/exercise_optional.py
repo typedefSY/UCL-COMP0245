@@ -89,18 +89,14 @@ plt.tight_layout()
 # plt.savefig(f"images/Ex5_PR_Degrees.png")
 plt.show()
 
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(14, 6))
+plt.subplot(1, 2, 1)
 plt.scatter(y_test, y_pred_poly, edgecolors='k', s=15, label='Polynomial Regression')
 plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
 plt.title(f'Polynomial Regression: Predicted vs Actual, MSE = {min_mse:.4f}, R2 = {max_r2:.4f}')
 plt.xlabel('Actual Values')
 plt.ylabel('Predicted Values')
 plt.legend()
-
-plt.tight_layout()
-# !Uncomment the following lines to save the plot
-# plt.savefig("images/Ex5_PR_Prediction.png")
-plt.show()
 
 ###################################### Random Forest ######################################
 # Initialize the RandomForestRegressor
@@ -118,13 +114,13 @@ print(f"Optimized Random Forest: MSE = {mse:.4f}, R2 = {r2:.4f}")
 print("\033[92m===================================================================\033[0m")
 
 # Plot the results
-plt.figure(figsize=(12, 6))
-plt.scatter(y_test, y_pred, edgecolors='k', s=15, label='Random Forest Regressor Predictions')
+plt.subplot(1, 2, 2)
+plt.scatter(y_test, y_pred, edgecolors='k', s=15, c='r', label='Random Forest Regressor Predictions')
 plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
 plt.title(f'Random Forest: Predicted vs Actual, MSE = {mse:.4f}, R2 = {r2:.4f}')
 plt.xlabel('Actual Values')
 plt.ylabel('Predicted Values')
 plt.legend()
 # !Uncomment the following lines to save the plot
-# plt.savefig("images/Ex5_RF_Prediction.png")
+plt.savefig("images/Ex5_Comparison.png")
 plt.show()
