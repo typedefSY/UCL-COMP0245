@@ -130,12 +130,20 @@ def main():
             diag_elements[i] = 0
     # Standard errors of parameters
     param_se = np.sqrt(diag_elements)
-    # Compute confidence intervals for parameters
-    lower_bounds_a = a - 1.96 * param_se
-    upper_bounds_a = a + 1.96 * param_se
-    # Print confidence intervals of the parameters
-    for i in range(len(a)):
-        print(f"Parameter {i+1}: Estimate = {a[i]:.4f}, 95% CI = [{lower_bounds_a[i]:.4f}, {upper_bounds_a[i]:.4f}]")
+    # Plot confidence intervals for parameters
+    plt.figure(figsize=(12, 6))
+    plt.errorbar(range(1, p+1), a, yerr=1.96*param_se, fmt='o', c='g', capsize=5, label='95% Confidence Intervals')
+    plt.axhline(0, color='gray', linewidth=0.5, linestyle='--')
+    plt.xlabel('Parameter Index')
+    plt.ylabel('Parameter Estimate (a)')
+    plt.title('Confidence Intervals of Parameters')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+
+    # !Uncomment the following lines to save the plot
+    # plt.savefig("images/noise_1/parameters_confidence_intervals.png")
+    plt.show()
     
     ##################################################################################################
     # Compute confidence intervals for the prediction
