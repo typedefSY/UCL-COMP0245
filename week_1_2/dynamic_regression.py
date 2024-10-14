@@ -126,6 +126,7 @@ def main():
     diag_elements = np.diag(param_var).copy()
     for i in range(len(diag_elements)):
         if diag_elements[i] < 0:
+            print(f"All negative variance:\nNegative variance for parameter {i+1}: {diag_elements[i]}")
             diag_elements[i] = 0
     # Standard errors of parameters
     param_se = np.sqrt(diag_elements)
