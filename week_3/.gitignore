@@ -6,3 +6,6 @@ configs/
 
 # ignore images directory
 images/
+
+# ignore py cache
+__pycache__/
