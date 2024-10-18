@@ -127,7 +127,7 @@ def objective(params):
 
 def main():
     # Define the search space for Kp and Kd
-   # Define the search space as before
+    # Define the search space as before
     space = [
         Real(0.1, 1000, name=f'kp{i}') for i in range(7)
     ] + [
@@ -144,6 +144,8 @@ def main():
         normalize_y=True,
         n_restarts_optimizer=10  # Optional for better hyperparameter optimization
         )
+    
+    acq_func='EI'  # Expected Improvement
 
     # Perform Bayesian optimization
     result = gp_minimize(
@@ -151,7 +153,7 @@ def main():
         space,
         n_calls=20,
         base_estimator=gp,  # Use the custom Gaussian Process Regressor
-        acq_func='EI', # TODO change this LCB': Lower Confidence Bound 'EI': Expected Improvement 'PI': Probability of Improvement
+        acq_func=acq_func, # TODO change this LCB': Lower Confidence Bound 'EI': Expected Improvement 'PI': Probability of Improvement
         acq_optimizer='auto',
         n_jobs=-1,
         random_state=42)
@@ -170,7 +172,7 @@ def main():
     gp_kd0 = fit_gp_model_1d(kd0_values_array, tracking_errors_array)
 
     # Plot the results
-    plot_gp_results_1d(kp0_values_array, kd0_values_array, tracking_errors_array, gp_kp0, gp_kd0)
+    plot_gp_results_1d(kp0_values_array, kd0_values_array, tracking_errors_array, gp_kp0, gp_kd0, acq_func)
 
 
     print(f"Optimal Kp: {best_kp}, Optimal Kd: {best_kd}")
