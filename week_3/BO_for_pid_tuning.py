@@ -138,26 +138,26 @@ def main():
     ]
 
     rbf_kernel = RBF(
-    length_scale=1.0,            # Initial length scale
-    length_scale_bounds=(1e-2, 1e2)  # Bounds for length scale
-    )
+        length_scale=1.0,            # Initial length scale
+        length_scale_bounds=(1e-2, 1e2)  # Bounds for length scale
+        )
 
     gp = GaussianProcessRegressor(
-    kernel=rbf_kernel,
-    normalize_y=True,
-    n_restarts_optimizer=100  # Optional for better hyperparameter optimization
-    )
+        kernel=rbf_kernel,
+        normalize_y=True,
+        n_restarts_optimizer=10  # Optional for better hyperparameter optimization
+        )
 
     # Perform Bayesian optimization
     result = gp_minimize(
-    objective,
-    space,
-    n_calls=20,
-    base_estimator=gp,  # Use the custom Gaussian Process Regressor
-    acq_func='EI', # TODO change this LCB': Lower Confidence Bound 'EI': Expected Improvement 'PI': Probability of Improvement
-    acq_optimizer='auto',
-    n_jobs=-1,
-    random_state=42)
+        objective,
+        space,
+        n_calls=20,
+        base_estimator=gp,  # Use the custom Gaussian Process Regressor
+        acq_func='EI', # TODO change this LCB': Lower Confidence Bound 'EI': Expected Improvement 'PI': Probability of Improvement
+        acq_optimizer='auto',
+        n_jobs=-1,
+        random_state=42)
     
     # Extract the optimal values
     best_kp = result.x[:7]  # Optimal kp vector
