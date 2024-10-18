@@ -49,68 +49,67 @@ def plot_gp_results_1d(kp0_values, kd0_values, tracking_errors, gp_kp0, gp_kd0):
     y_mean_kd0, y_std_kd0 = gp_kd0.predict(kd0_pred, return_std=True)
     
 
-    # Plotting
+    # Plot for kp0
+    # plt.figure(figsize=(14, 6))
+    # plt.subplot(1, 2, 1)
+    # plt.plot(kp0_pred, y_mean_kp0, 'k-', lw=1.5, zorder=9, label='Mean prediction')
+    # plt.fill_between(kp0_pred.ravel(), y_mean_kp0 - 1.96 * y_std_kp0, y_mean_kp0 + 1.96 * y_std_kp0,
+    #                 alpha=0.5, fc='orange', ec='None', label='95% confidence interval')
+    # # plt.scatter(X, y, c='blue', s=50, zorder=10, edgecolors=(0, 0, 0), label='Observations')
+    # # plt.plot(X_pred, np.sin(X_pred), 'r:', lw=1.5, label='True function')
+    # plt.title("Gaussian process regression on noise-free dataset")
+    # plt.xlabel('X')
+    # plt.ylabel('f(X)')
+    # plt.legend(loc='upper left')
+    
+    # Plot for kp0
     plt.figure(figsize=(14, 6))
     plt.subplot(1, 2, 1)
-    plt.plot(kp0_pred, y_mean_kp0, 'k-', lw=1.5, zorder=9, label='Mean prediction')
-    plt.fill_between(kp0_pred.ravel(), y_mean_kp0 - 1.96 * y_std_kp0, y_mean_kp0 + 1.96 * y_std_kp0,
-                    alpha=0.5, fc='orange', ec='None', label='95% confidence interval')
-    #plt.scatter(X, y, c='blue', s=50, zorder=10, edgecolors=(0, 0, 0), label='Observations')
-    #plt.plot(X_pred, np.sin(X_pred), 'r:', lw=1.5, label='True function')
-    plt.title("Gaussian process regression on noise-free dataset")
-    plt.xlabel('X')
-    plt.ylabel('f(X)')
-    plt.legend(loc='upper left')
-    #plt.show()
-
-
-
-
-    # Plot for kp0
-    #plt.figure(figsize=(14, 6))
-    
-    #plt.subplot(1, 2, 1)
-    #plt.fill_between(
-    #    kp0_pred.ravel(),
-    #    y_mean_kp0 - 1.96 * y_std_kp0,
-    #    y_mean_kp0 + 1.96 * y_std_kp0,
-    #    alpha=0.2,
-    #    label='95% Confidence Interval'
-    #)
-    #plt.plot(kp0_pred, y_mean_kp0, 'k-', label='GP Mean Prediction')
-    #plt.scatter(kp0_values, tracking_errors, c='r', label='Data Points')
-    #plt.title('GP Regression for kp0')
-    #plt.xlabel('kp0')
-    #plt.ylabel('Tracking Error')
-    #plt.legend()
+    plt.fill_between(
+       kp0_pred.ravel(),
+       y_mean_kp0 - 1.96 * y_std_kp0,
+       y_mean_kp0 + 1.96 * y_std_kp0,
+       alpha=0.2,
+       label='95% Confidence Interval'
+    )
+    plt.plot(kp0_pred, y_mean_kp0, 'k-', label='GP Mean Prediction')
+    plt.scatter(kp0_values, tracking_errors, c='r', label='Data Points')
+    plt.title('GP Regression for kp0')
+    plt.xlabel('kp0')
+    plt.ylabel('Tracking Error')
+    plt.legend()
+    plt.tight_layout()
+    # plt.show()
     
     # Plot for kd0
+    # plt.figure(figsize=(14, 6))
+    # plt.subplot(1, 2, 1)
+    # plt.plot(kd0_pred, y_mean_kd0, 'k-', lw=1.5, zorder=9, label='Mean prediction')
+    # plt.fill_between(kd0_pred.ravel(), y_mean_kd0 - 1.96 * y_std_kd0, y_mean_kd0 + 1.96 * y_std_kd0,
+    #                 alpha=0.5, fc='orange', ec='None', label='95% confidence interval')
+    # # plt.scatter(X, y, c='blue', s=50, zorder=10, edgecolors=(0, 0, 0), label='Observations')
+    # # plt.plot(X_pred, np.sin(X_pred), 'r:', lw=1.5, label='True function')
+    # plt.title("Gaussian process regression on noise-free dataset")
+    # plt.xlabel('X')
+    # plt.ylabel('f(X)')
+    # plt.legend(loc='upper left')
+
     plt.subplot(1, 2, 2)
-    plt.plot(kd0_pred, y_mean_kd0, 'k-', lw=1.5, zorder=9, label='Mean prediction')
-    plt.fill_between(kd0_pred.ravel(), y_mean_kd0 - 1.96 * y_std_kd0, y_mean_kd0 + 1.96 * y_std_kd0,
-                    alpha=0.5, fc='orange', ec='None', label='95% confidence interval')
-    #plt.scatter(X, y, c='blue', s=50, zorder=10, edgecolors=(0, 0, 0), label='Observations')
-    #plt.plot(X_pred, np.sin(X_pred), 'r:', lw=1.5, label='True function')
-    plt.title("Gaussian process regression on noise-free dataset")
-    plt.xlabel('X')
-    plt.ylabel('f(X)')
-    plt.legend(loc='upper left')
-
-
-
-    #plt.fill_between(
-    #    kd0_pred.ravel(),
-    #    y_mean_kd0 - 1.96 * y_std_kd0,
-    #    y_mean_kd0 + 1.96 * y_std_kd0,
-    #    alpha=0.2,
-    #    label='95% Confidence Interval'
-    #)
-    #plt.plot(kd0_pred, y_mean_kd0, 'k-', label='GP Mean Prediction')
-    #plt.scatter(kd0_values, tracking_errors, c='r', label='Data Points')
-    #plt.title('GP Regression for kd0')
-    #plt.xlabel('kd0')
-    #plt.ylabel('Tracking Error')
-    #plt.legend()
+    plt.fill_between(
+       kd0_pred.ravel(),
+       y_mean_kd0 - 1.96 * y_std_kd0,
+       y_mean_kd0 + 1.96 * y_std_kd0,
+       alpha=0.2,
+       label='95% Confidence Interval'
+    )
+    plt.plot(kd0_pred, y_mean_kd0, 'k-', label='GP Mean Prediction')
+    plt.scatter(kd0_values, tracking_errors, c='r', label='Data Points')
+    plt.title('GP Regression for kd0')
+    plt.xlabel('kd0')
+    plt.ylabel('Tracking Error')
+    plt.legend()
     
     plt.tight_layout()
     plt.show()
+    
+    

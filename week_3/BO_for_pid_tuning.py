@@ -66,7 +66,7 @@ def simulate_with_given_pid_values(sim_, kp, kd, episode_duration=10):
     
     steps = int(episode_duration/time_step)
     # testing loop
-    for i in range(steps):
+    for _ in range(steps):
         # measure current state
         q_mes = sim_.GetMotorAngles(0)
         qd_mes = sim_.GetMotorVelocities(0)
@@ -101,7 +101,7 @@ def simulate_with_given_pid_values(sim_, kp, kd, episode_duration=10):
 
     tracking_error = np.sum((q_mes_all - q_des_all)**2)  # Sum of squared error as the objective
     # print tracking error
-    print("Tracking error: ", tracking_error)
+    print(f"\033[91mTracking error: {tracking_error}\033[0m")
     # print PD gains
     print("kp: ", kp)
     print("kd: ", kd)
@@ -116,8 +116,13 @@ def objective(params):
     episode_duration = 10
     
     # TODO Call the simulation with given kp and kd values
+    tracking_error = simulate_with_given_pid_values(sim, kp, kd, episode_duration)
+    
 
-    # TODO Collect data for the first kp and kd  
+    # Collect data for the first kp and kd
+    kp0_values.append(kp[0])
+    kd0_values.append(kd[0])
+    tracking_errors.append(tracking_error)
     
     
     return tracking_error
@@ -140,16 +145,18 @@ def main():
     gp = GaussianProcessRegressor(
     kernel=rbf_kernel,
     normalize_y=True,
-    n_restarts_optimizer=10  # Optional for better hyperparameter optimization
+    n_restarts_optimizer=100  # Optional for better hyperparameter optimization
     )
 
     # Perform Bayesian optimization
     result = gp_minimize(
     objective,
     space,
-    n_calls=10,
+    n_calls=20,
     base_estimator=gp,  # Use the custom Gaussian Process Regressor
-    acq_func='EI',      # TODO change this LCB': Lower Confidence Bound 'EI': Expected Improvement 'PI': Probability of Improvement
+    acq_func='EI', # TODO change this LCB': Lower Confidence Bound 'EI': Expected Improvement 'PI': Probability of Improvement
+    acq_optimizer='auto',
+    n_jobs=-1,
     random_state=42)
     
     # Extract the optimal values
