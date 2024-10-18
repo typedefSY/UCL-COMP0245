@@ -115,16 +115,13 @@ def objective(params):
     kd = np.array(params[7:])  # Last 7 elements correspond to kd
     episode_duration = 10
     
-    # TODO Call the simulation with given kp and kd values
     tracking_error = simulate_with_given_pid_values(sim, kp, kd, episode_duration)
     
-
     # Collect data for the first kp and kd
     kp0_values.append(kp[0])
     kd0_values.append(kd[0])
     tracking_errors.append(tracking_error)
-    
-    
+
     return tracking_error
 
 
