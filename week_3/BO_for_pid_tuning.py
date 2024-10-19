@@ -194,10 +194,10 @@ def main():
     plt.grid()
     plt.legend()
     # !Uncomment the following lines to save the plot
-    if not os.path.exists('images'):
-        os.makedirs('images')
-    file_path = f'images/tracking_error_vs_iteration_{acq_func}_1.png'
-    plt.savefig(file_path)
+    # if not os.path.exists('images'):
+    #     os.makedirs('images')
+    # file_path = f'images/tracking_error_vs_iteration_{acq_func}.png'
+    # plt.savefig(file_path)
     
     plt.figure(figsize=(15, 45))
     time_steps = trajectory_data['time']
@@ -212,11 +212,11 @@ def main():
     plt.xlabel('Time Steps')
     plt.suptitle(f'Desired vs Measured Joint Position optimized using {acq_func}')
     # !Uncomment the following lines to save the plot
-    if not os.path.exists('images'):
-        os.makedirs('images')
-    file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
-    plt.savefig(file_path)
-    plt.show()
+    # if not os.path.exists('images'):
+    #     os.makedirs('images')
+    # file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
+    # plt.savefig(file_path)
+    # plt.show()
 
     # Prepare data
     # kp0_values_array = np.array(kp0_values).reshape(-1, 1)
