@@ -185,10 +185,15 @@ def main():
     plt.plot(mean_iterations, mean_errors, 'r-', label="Mean Error (every 5 iterations)")
     plt.xlabel('Iteration')
     plt.ylabel('Tracking Error')
-    plt.title('Tracking Error vs Iteration')
+    plt.title(f'Tracking Error vs Iteration, {acq_func}')
     plt.grid()
+    # !Uncomment the following lines to save the plot
+    if not os.path.exists('images'):
+        os.makedirs('images')
+    file_path = f'images/tracking_error_vs_iteration_{acq_func}.png'
+    plt.savefig(file_path)
     
-    plt.figure(figsize=(15, 10))
+    plt.figure(figsize=(15, 45))
     time_steps = trajectory_data['time']
     for i in range(num_joints):
         plt.subplot(num_joints, 1, i + 1)
@@ -196,10 +201,15 @@ def main():
         q_mes_joint = np.array([qm[i] for qm in trajectory_data['q_mes']])
         plt.plot(time_steps, q_des_joint, 'b-', label=f'Joint {i+1} Desired')
         plt.plot(time_steps, q_mes_joint, 'r--', label=f'Joint {i+1} Measured')
-        plt.ylabel('Position (rad)')
+        plt.ylabel(f'Joint {i+1} Position')
         plt.legend()
-    plt.xlabel('Time (s)')
-    plt.suptitle('Desired vs Measured Joint Positions')
+    plt.xlabel('Time Steps')
+    plt.suptitle(f'Desired vs Measured Joint Position optimized using {acq_func}')
+    # !Uncomment the following lines to save the plot
+    if not os.path.exists('images'):
+        os.makedirs('images')
+    file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
+    plt.savefig(file_path)
     plt.show()
 
     # Prepare data
