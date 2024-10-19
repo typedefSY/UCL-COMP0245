@@ -46,7 +46,7 @@ kp0_values = []
 kd0_values = []
 tracking_errors = []
 
-def simulate_with_given_pid_values(sim_, kp, kd, episode_duration=20, record_trajectory=False):
+def simulate_with_given_pid_values(sim_, kp, kd, episode_duration=10, record_trajectory=False):
     
     # here we reset the simulator each time we start a new test
     sim_.ResetPose()
@@ -142,7 +142,7 @@ def main():
 
     rbf_kernel = RBF(
         length_scale=1.0,            # Initial length scale
-        length_scale_bounds=(1e-2, 1e1)  # Bounds for length scale
+        length_scale_bounds=(1e-4, 1e-1)  # Bounds for length scale
     )
 
     gp = GaussianProcessRegressor(
@@ -151,7 +151,7 @@ def main():
         n_restarts_optimizer=5  # Optional for better hyperparameter optimization
         )
     
-    acq_func='EI'  # Expected Improvement
+    acq_func='LCB'  # Expected Improvement
 
     # Perform Bayesian optimization
     result = gp_minimize(
@@ -183,6 +183,11 @@ def main():
     ]
     mean_iterations = np.arange(0, len(tracking_errors), window_size) + window_size // 2
     plt.plot(mean_iterations, mean_errors, 'r-', label="Mean Error (every 5 iterations)")
+    # Show the minimum error
+    min_error_index = np.argmin(tracking_errors)
+    min_error_value = tracking_errors[min_error_index]
+    plt.scatter(min_error_index, min_error_value, color='green', label='Minimum Tracking Error', zorder=5)  # zorder确保点在最上层
+    plt.axhline(y=min_error_value, color='gray', linestyle='--', label=f'Minimum Error Value = {min_error_value:.2f}')
     plt.xlabel('Iteration')
     plt.ylabel('Tracking Error')
     plt.title(f'Tracking Error vs Iteration, {acq_func}')
@@ -191,7 +196,7 @@ def main():
     # !Uncomment the following lines to save the plot
     if not os.path.exists('images'):
         os.makedirs('images')
-    file_path = f'images/tracking_error_vs_iteration_{acq_func}.png'
+    file_path = f'images/tracking_error_vs_iteration_{acq_func}_1.png'
     plt.savefig(file_path)
     
     plt.figure(figsize=(15, 45))
