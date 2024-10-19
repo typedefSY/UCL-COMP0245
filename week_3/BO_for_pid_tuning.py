@@ -187,6 +187,7 @@ def main():
     plt.ylabel('Tracking Error')
     plt.title(f'Tracking Error vs Iteration, {acq_func}')
     plt.grid()
+    plt.legend()
     # !Uncomment the following lines to save the plot
     if not os.path.exists('images'):
         os.makedirs('images')
