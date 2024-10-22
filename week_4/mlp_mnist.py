@@ -22,6 +22,9 @@ test_dataset = datasets.MNIST(root='./data', train=False,
 train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False)
 
+# Specify the device (GPU if available, otherwise CPU)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # 2. Model Construction
 class MLP(nn.Module):
     def __init__(self):
@@ -40,7 +43,8 @@ class MLP(nn.Module):
         x = self.softmax(x)
         return x
 
-model = MLP()
+# Instantiate the model and move it to the selected device
+model = MLP().to(device)
 
 # 3. Model Compilation
 criterion = nn.NLLLoss()  # Negative Log Likelihood Loss (used with LogSoftmax)
@@ -57,6 +61,9 @@ for epoch in range(epochs):
     correct = 0
 
     for data, target in train_loader:
+        # Move data and target to the device
+        data, target = data.to(device), target.to(device)
+
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)  # target is not one-hot encoded in PyTorch
@@ -79,6 +86,9 @@ correct = 0
 
 with torch.no_grad():
     for data, target in test_loader:
+        # Move data and target to the device
+        data, target = data.to(device), target.to(device)
+
         output = model(data)
         test_loss += criterion(output, target).item()
         pred = output.argmax(dim=1, keepdim=True)
@@ -88,8 +98,3 @@ test_loss /= len(test_loader)
 test_accuracy = 100. * correct / len(test_loader.dataset)
 
 print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%')
-
-
-
-
-
