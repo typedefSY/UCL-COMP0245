@@ -216,7 +216,7 @@ def main():
     #     os.makedirs('images')
     # file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
     # plt.savefig(file_path)
-    # plt.show()
+    plt.show()
 
     # Prepare data
     # kp0_values_array = np.array(kp0_values).reshape(-1, 1)
