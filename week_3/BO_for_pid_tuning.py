@@ -200,7 +200,7 @@ def main():
     # file_path = f'images/tracking_error_vs_iteration_{acq_func}.png'
     # plt.savefig(file_path)
     
-    plt.figure(figsize=(15, 45))
+    plt.figure(figsize=(15, 25))
     time_steps = trajectory_data['time']
     for i in range(num_joints):
         plt.subplot(num_joints, 1, i + 1)
@@ -211,12 +211,13 @@ def main():
         plt.ylabel(f'Joint {i+1} Position')
         plt.legend()
     plt.xlabel('Time Steps')
-    plt.suptitle(f'Desired vs Measured Joint Position optimized using {acq_func}')
+    plt.suptitle(f'Desired vs Measured Joint Position optimized using {acq_func}', y=0.95)
+    plt.subplots_adjust(top=0.93, bottom=0.1, hspace=0.2)
     # !Uncomment the following lines to save the plot
-    # if not os.path.exists('images'):
-    #     os.makedirs('images')
-    # file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
-    # plt.savefig(file_path)
+    if not os.path.exists('images'):
+        os.makedirs('images')
+    file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
+    plt.savefig(file_path)
     plt.show()
 
     # Prepare data
