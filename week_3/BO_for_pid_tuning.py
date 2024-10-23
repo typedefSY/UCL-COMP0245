@@ -142,8 +142,8 @@ def main():
     ]
 
     rbf_kernel = RBF(
-        length_scale=1.0,            # Initial length scale
-        length_scale_bounds=(1e-4, 1e-1)  # Bounds for length scale
+        length_scale=[1.0],            # Initial length scale
+        length_scale_bounds=(1e-4, 1e4)  # Bounds for length scale
     )
 
     gp = GaussianProcessRegressor(
@@ -152,7 +152,7 @@ def main():
         n_restarts_optimizer=5  # Optional for better hyperparameter optimization
         )
     
-    acq_func='LCB'  # Expected Improvement
+    acq_func='PI'  # Expected Improvement
 
     # Perform Bayesian optimization
     result = gp_minimize(
@@ -214,10 +214,10 @@ def main():
     plt.suptitle(f'Desired vs Measured Joint Position optimized using {acq_func}', y=0.95)
     plt.subplots_adjust(top=0.93, bottom=0.1, hspace=0.2)
     # !Uncomment the following lines to save the plot
-    if not os.path.exists('images'):
-        os.makedirs('images')
-    file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
-    plt.savefig(file_path)
+    # if not os.path.exists('images'):
+    #     os.makedirs('images')
+    # file_path = f'images/desired_vs_measured_joint_position_{acq_func}.png'
+    # plt.savefig(file_path)
     plt.show()
 
     # Prepare data
