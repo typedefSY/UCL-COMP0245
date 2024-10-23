@@ -7,7 +7,7 @@ from simulation_and_control import pb, MotorCommands, PinWrapper, feedback_lin_c
 from skopt import gp_minimize
 from skopt.space import Real
 from skopt.learning import GaussianProcessRegressor
-from skopt.learning.gaussian_process.kernels import RBF
+from skopt.learning.gaussian_process.kernels import RBF, Matern
 
 
 # Configuration for the simulation
@@ -145,12 +145,19 @@ def main():
         length_scale=[1.0],            # Initial length scale
         length_scale_bounds=(1e-4, 1e4)  # Bounds for length scale
     )
+    
+    #! Uncomment following rbf_kernel to use Matern kernel in gp
+    # matern_kernel = Matern(
+    #     length_scale=[1.0],
+    #     length_scale_bounds=(1e-4, 1),
+    #     nu=2.5
+    # )
 
     gp = GaussianProcessRegressor(
         kernel=rbf_kernel,
         normalize_y=True,
         n_restarts_optimizer=5  # Optional for better hyperparameter optimization
-        )
+    )
     
     acq_func='PI'  # Expected Improvement
 
