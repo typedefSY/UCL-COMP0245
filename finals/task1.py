@@ -4,6 +4,10 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
+import os
+
+#! Change to 'cuda' if you are using Nvidia, change to mps if you are using Mac, otherwise 'cpu'
+device = torch.device("cpu" if torch.backends.mps.is_available() else "cpu")
 
 # Constants
 m = 1.0  # Mass (kg)
@@ -53,77 +57,92 @@ train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
 # MLP Model Definition
 class MLP(nn.Module):
-    def __init__(self):
+    def __init__(self, hidden_size):
         super(MLP, self).__init__()
         self.layers = nn.Sequential(
-            nn.Linear(4, 64),
+            nn.Linear(4, hidden_size),
             nn.ReLU(),
-            nn.Linear(64, 64),
+            nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(64, 1)
+            nn.Linear(hidden_size, 1)
         )
 
     def forward(self, x):
         return self.layers(x)
 
 # Model, Loss, Optimizer
-model = MLP()
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.00001)
+hidden_sizes = [32, 64, 96, 128]
+results = {}
 
-# Training Loop
-epochs = 1000
-train_losses = []
+fig, axes = plt.subplots(2, 2, figsize=(12, 6))
+axes = axes.flatten()
 
+for i, hidden_size in enumerate(hidden_sizes):
+    model = MLP(hidden_size=hidden_size).to(device)
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    epochs = 500
+    train_losses = []
+    for epoch in range(epochs):
+        epoch_loss = 0
+        for data, target in train_loader:
+            data, target = data.to(device), target.to(device)
+            optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
+            epoch_loss += loss.item()
+        train_losses.append(epoch_loss / len(train_loader))
+        print(f'Epoch {epoch + 1}/{epochs}, Loss: {train_losses[-1]:.6f}')
 
-for epoch in range(epochs):
-    epoch_loss = 0
-    for data, target in train_loader:
-        optimizer.zero_grad()
-        output = model(data)
-        loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
+    results[hidden_size] = train_losses
+    print(f'Hidden size: {hidden_size}, Final Epoch Loss: {train_losses[-1]:.6f}')
+    
+    # Testing Phase: Simulate trajectory tracking
+    q_test = 0
+    dot_q_test = 0
+    q_real = []
+    q_real_corrected = []
+    
+    # integration with only PD Control
+    for k in range(len(t)):
+        tau = k_p * (q_target[k] - q_test) + k_d * (dot_q_target[k] - dot_q_test)
+        ddot_q_real = (tau - b * dot_q_test) / m
+        dot_q_test += ddot_q_real * dt
+        q_test += dot_q_test * dt
+        q_real.append(q_test)
+    
+    for j in range(len(t)):
+        tau = k_p * (q_target[j] - q_test) + k_d * (dot_q_target[j] - dot_q_test)
+        inputs = torch.tensor([q_test, dot_q_test, q_target[j], dot_q_target[j]], dtype=torch.float32).to(device)
+        correction = model(inputs.unsqueeze(0)).item()
+        ddot_q_corrected = (tau - b * dot_q_test + correction) / m
+        dot_q_test += ddot_q_corrected * dt
+        q_test += dot_q_test * dt
+        q_real_corrected.append(q_test)
 
-    epoch_loss += loss.item()
+    # Plot results
+    axes[i].plot(t, q_target, 'r-', label='Target')
+    axes[i].plot(t, q_real, 'g--', label='PD Only')
+    axes[i].plot(t, q_real_corrected, 'b--', label='PD + MLP Correction')
+    axes[i].set_title(f'Trajectory with Hidden Size {hidden_size}')
+    axes[i].set_xlabel('Time [s]')
+    axes[i].set_ylabel('Position')
+    axes[i].legend()
+# modify the layout of trajectories plot
+plt.tight_layout()
+if not os.path.exists('images/task1.1/'):
+    os.makedirs('images/task1.1/')
+plt.savefig('images/task1.1/trajectories.png')
 
-    train_losses.append(epoch_loss / len(train_loader))
-    print(f'Epoch {epoch+1}/{epochs}, Loss: {train_losses[-1]:.6f}')
-
-# Testing Phase: Simulate trajectory tracking
-q_test = 0
-dot_q_test = 0
-q_real = []
-q_real_corrected = []
-
-
-# integration with only PD Control
-for i in range(len(t)):
-    tau = k_p * (q_target[i] - q_test) + k_d * (dot_q_target[i] - dot_q_test)
-    ddot_q_real = (tau - b * dot_q_test) / m
-    dot_q_test += ddot_q_real * dt
-    q_test += dot_q_test * dt
-    q_real.append(q_test)
-
-q_test = 0
-dot_q_test = 0
-for i in range(len(t)):
-    # Apply MLP correction
-    tau = k_p * (q_target[i] - q_test) + k_d * (dot_q_target[i] - dot_q_test)
-    inputs = torch.tensor([q_test, dot_q_test, q_target[i], dot_q_target[i]], dtype=torch.float32)
-    correction = model(inputs.unsqueeze(0)).item()
-    ddot_q_corrected =(tau - b * dot_q_test + correction) / m
-    dot_q_test += ddot_q_corrected * dt
-    q_test += dot_q_test * dt
-    q_real_corrected.append(q_test)
-
-# Plot results
+# Plot training loss results
 plt.figure(figsize=(12, 6))
-plt.plot(t, q_target, 'r-', label='Target')
-plt.plot(t, q_real, 'b--', label='PD Only')
-plt.plot(t, q_real_corrected, 'g:', label='PD + MLP Correction')
-plt.title('Trajectory Tracking with and without MLP Correction')
-plt.xlabel('Time [s]')
-plt.ylabel('Position')
+for hidden_size in hidden_sizes:
+    plt.plot(results[hidden_size], label=f'Hidden Size {hidden_size}')
+plt.title('Training Loss by Hidden Layer Size')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
 plt.legend()
+plt.savefig('images/task1.1/training_loss.png')
 plt.show()
