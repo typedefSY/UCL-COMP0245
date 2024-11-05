@@ -1,0 +1,11 @@
+# Ignore the build directory
+models/
+
+# Ignore the egg-info directory
+configs/
+
+# ignore images directory
+images/
+
+# ignore py cache
+__pycache__/
