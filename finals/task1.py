@@ -70,12 +70,31 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.layers(x)
 
+class DeepCorrectorMLP(nn.Module):
+    def __init__(self, hidden_size_1, hidden_size_2):
+        super(DeepCorrectorMLP, self).__init__()
+        self.layers = nn.Sequential(
+            nn.Linear(4, hidden_size_1),
+            nn.ReLU(),
+            nn.Linear(hidden_size_1, hidden_size_1),
+            nn.ReLU(),
+            nn.Linear(hidden_size_1, hidden_size_2),
+            nn.ReLU(),
+            nn.Linear(hidden_size_2, 1)
+        )
+    def forward(self, x):
+        return self.layers(x)
+        
+
 def main_1():
+    #! For this task, CPU is faster than GPU
+    device = torch.device("cpu" if torch.backends.mps.is_available() else "cpu")
     # Model, Loss, Optimizer
     hidden_sizes = [32, 64, 96, 128]
     results = {}
+    results_str = ''
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 6))
+    _, axes = plt.subplots(2, 2, figsize=(12, 6))
     axes = axes.flatten()
 
     for i, hidden_size in enumerate(hidden_sizes):
@@ -98,7 +117,7 @@ def main_1():
             print(f'Epoch {epoch + 1}/{epochs}, Loss: {train_losses[-1]:.6f}')
 
         results[hidden_size] = train_losses
-        print(f'Hidden size: {hidden_size}, Final Epoch Loss: {train_losses[-1]:.6f}')
+        results_str += f'Hidden Size: {hidden_size}, Final Epoch Loss: {train_losses[-1]:.6f}\n'
         
         # Testing Phase: Simulate trajectory tracking
         q_test = 0
@@ -136,6 +155,11 @@ def main_1():
     if not os.path.exists('images/task1.1/'):
         os.makedirs('images/task1.1/')
     plt.savefig('images/task1.1/trajectories.png')
+    
+    # log results
+    print("\033[92m=============================== Training results ================================\033[0m")
+    print(results_str.strip())
+    print("\033[92m=================================================================================\033[0m")
 
     # Plot training loss results
     plt.figure(figsize=(12, 6))
@@ -148,8 +172,99 @@ def main_1():
     plt.savefig('images/task1.1/training_loss.png')
     plt.show()
 
+def main_2():
+    device = torch.device("cpu" if torch.backends.mps.is_available() else "cpu")
+    # Model, Loss, Optimizer
+    hidden_sizes = [16, 32, 64]
+    results = {}
+    results_str = ''
+
+    _, axes = plt.subplots(3, 3, figsize=(12, 10))
+    axes = axes.flatten()
+
+    index = 0
+    for hidden_size_1 in hidden_sizes:
+        for hidden_size_2 in hidden_sizes:
+            model = DeepCorrectorMLP(hidden_size_1, hidden_size_2).to(device)
+            criterion = nn.MSELoss()
+            optimizer = optim.Adam(model.parameters(), lr=0.0001)
+            epochs = 500
+            train_losses = []
+            for epoch in range(epochs):
+                epoch_loss = 0
+                for data, target in train_loader:
+                    data, target = data.to(device), target.to(device)
+                    optimizer.zero_grad()
+                    output = model(data)
+                    loss = criterion(output, target)
+                    loss.backward()
+                    optimizer.step()
+                    epoch_loss += loss.item()
+                train_losses.append(epoch_loss / len(train_loader))
+                print(f'Epoch {epoch + 1}/{epochs}, Loss: {train_losses[-1]:.6f}')
+
+            results[str(hidden_size_1) + str(hidden_size_2)] = train_losses
+            results_str += f'Hidden Layers Size {hidden_size_1}, {hidden_size_2} Final Epoch Loss: {train_losses[-1]:.6f}\n'
+                
+            # Testing Phase: Simulate trajectory tracking
+            q_test = 0
+            dot_q_test = 0
+            q_real = []
+            q_real_corrected = []
+                
+            # integration with only PD Control
+            for k in range(len(t)):
+                tau = k_p * (q_target[k] - q_test) + k_d * (dot_q_target[k] - dot_q_test)
+                ddot_q_real = (tau - b * dot_q_test) / m
+                dot_q_test += ddot_q_real * dt
+                q_test += dot_q_test * dt
+                q_real.append(q_test)
+            
+            for j in range(len(t)):
+                tau = k_p * (q_target[j] - q_test) + k_d * (dot_q_target[j] - dot_q_test)
+                inputs = torch.tensor([q_test, dot_q_test, q_target[j], dot_q_target[j]], dtype=torch.float32).to(device)
+                correction = model(inputs.unsqueeze(0)).item()
+                ddot_q_corrected = (tau - b * dot_q_test + correction) / m
+                dot_q_test += ddot_q_corrected * dt
+                q_test += dot_q_test * dt
+                q_real_corrected.append(q_test)
+
+            # Plot results
+            axes[index].plot(t, q_target, 'r-', label='Target')
+            axes[index].plot(t, q_real, 'g--', label='PD Only')
+            axes[index].plot(t, q_real_corrected, 'b--', label='PD + MLP Correction')
+            axes[index].set_title(f'Trajectory with Hidden Layers Size {hidden_size_1}, {hidden_size_2}')
+            axes[index].set_xlabel('Time [s]')
+            axes[index].set_ylabel('Position')
+            axes[index].legend()
+            index += 1
+    # modify the layout of trajectories plot
+    plt.tight_layout()
+    if not os.path.exists('images/task1.2/'):
+        os.makedirs('images/task1.2/')
+    plt.savefig('images/task1.2/trajectories.png')
+    
+    # log results
+    print("\033[92m=============================== Training results ================================\033[0m")
+    print(results_str.strip())
+    print("\033[92m=================================================================================\033[0m")
+
+    # Plot training loss results
+    plt.figure(figsize=(12, 6))
+    for hidden_size_1 in hidden_sizes:
+        for hidden_size_2 in hidden_sizes:
+            plt.plot(results[str(hidden_size_1) + str(hidden_size_2)], label=f'Hidden Layers Size {hidden_size_1}, {hidden_size_2}')
+    plt.title('Training Loss by Hidden Layer Size')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig('images/task1.2/training_loss.png')
+    plt.show()
+
 if __name__ == '__main__':
-    if sys.argv[1] == 'task1.1':
+    if len(sys.argv) > 1 and sys.argv[1] == 'task1.1':
         main_1()
+    elif len(sys.argv) > 1 and sys.argv[1] == 'task1.2':
+        main_2()
     else:
         main_1()
