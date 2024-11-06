@@ -145,8 +145,8 @@ def main_1(lr=0.1):
 
         # Plot results
         axes[i].plot(t, q_target, 'r-', label='Target')
-        axes[i].plot(t, q_real, 'g--', label='PD Only')
-        axes[i].plot(t, q_real_corrected, 'b--', label='PD + MLP Correction')
+        axes[i].plot(t, q_real, 'b--', label='PD Only')
+        axes[i].plot(t, q_real_corrected, 'g--', label='PD + MLP Correction')
         axes[i].set_title(f'Trajectory with Hidden Size {hidden_size}')
         axes[i].set_xlabel('Time [s]')
         axes[i].set_ylabel('Position')
@@ -232,8 +232,8 @@ def main_2(lr=0.1):
 
             # Plot results
             axes[index].plot(t, q_target, 'r-', label='Target')
-            axes[index].plot(t, q_real, 'g--', label='PD Only')
-            axes[index].plot(t, q_real_corrected, 'b--', label='PD + MLP Correction')
+            axes[index].plot(t, q_real, 'b--', label='PD Only')
+            axes[index].plot(t, q_real_corrected, 'g--', label='PD + MLP Correction')
             axes[index].set_title(f'Trajectory with Hidden Layers Size {hidden_size_1}, {hidden_size_2}')
             axes[index].set_xlabel('Time [s]')
             axes[index].set_ylabel('Position')
