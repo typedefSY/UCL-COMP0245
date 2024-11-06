@@ -16,7 +16,7 @@ b = 10  # Friction coefficient
 k_p = 50  # Proportional gain
 k_d = 10   # Derivative gain
 dt = 0.01  # Time step
-num_samples = 1000  # Number of samples in dataset
+num_samples = 1250  # Number of samples in dataset
 
 # Generate synthetic data for trajectory tracking
 t = np.linspace(0, 10, num_samples)
