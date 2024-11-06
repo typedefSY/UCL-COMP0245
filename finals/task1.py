@@ -86,7 +86,7 @@ class DeepCorrectorMLP(nn.Module):
         return self.layers(x)
         
 
-def main_1():
+def main_1(lr=0.1):
     #! For this task, CPU is faster than GPU
     device = torch.device("cpu" if torch.backends.mps.is_available() else "cpu")
     # Model, Loss, Optimizer
@@ -100,7 +100,8 @@ def main_1():
     for i, hidden_size in enumerate(hidden_sizes):
         model = MLP(hidden_size=hidden_size).to(device)
         criterion = nn.MSELoss()
-        optimizer = optim.Adam(model.parameters(), lr=0.0001)
+        #! Change learning rate below
+        optimizer = optim.Adam(model.parameters(), lr=lr)
         epochs = 500
         train_losses = []
         for epoch in range(epochs):
@@ -152,9 +153,9 @@ def main_1():
         axes[i].legend()
     # modify the layout of trajectories plot
     plt.tight_layout()
-    if not os.path.exists('images/task1.1/'):
-        os.makedirs('images/task1.1/')
-    plt.savefig('images/task1.1/trajectories.png')
+    if not os.path.exists(f'images/task1.1/lr{lr}'):
+        os.makedirs(f'images/task1.1/lr{lr}')
+    plt.savefig(f'images/task1.1/lr{lr}/trajectories.png')
     
     # log results
     print("\033[92m=============================== Training results ================================\033[0m")
@@ -169,10 +170,10 @@ def main_1():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('images/task1.1/training_loss.png')
+    plt.savefig(f'images/task1.1/lr{lr}/training_loss.png')
     plt.show()
 
-def main_2():
+def main_2(lr=0.1):
     device = torch.device("cpu" if torch.backends.mps.is_available() else "cpu")
     # Model, Loss, Optimizer
     hidden_sizes = [16, 32, 64]
@@ -187,7 +188,7 @@ def main_2():
         for hidden_size_2 in hidden_sizes:
             model = DeepCorrectorMLP(hidden_size_1, hidden_size_2).to(device)
             criterion = nn.MSELoss()
-            optimizer = optim.Adam(model.parameters(), lr=0.0001)
+            optimizer = optim.Adam(model.parameters(), lr=lr)
             epochs = 500
             train_losses = []
             for epoch in range(epochs):
@@ -240,9 +241,9 @@ def main_2():
             index += 1
     # modify the layout of trajectories plot
     plt.tight_layout()
-    if not os.path.exists('images/task1.2/'):
-        os.makedirs('images/task1.2/')
-    plt.savefig('images/task1.2/trajectories.png')
+    if not os.path.exists(f'images/task1.2/lr{lr}'):
+        os.makedirs(f'images/task1.2/lr{lr}')
+    # plt.savefig(f'images/task1.2/lr{lr}/trajectories.png')
     
     # log results
     print("\033[92m=============================== Training results ================================\033[0m")
@@ -258,13 +259,25 @@ def main_2():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('images/task1.2/training_loss.png')
+    plt.savefig(f'images/task1.2/lr{lr}/training_loss.png')
     plt.show()
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == 'task1.1':
-        main_1()
-    elif len(sys.argv) > 1 and sys.argv[1] == 'task1.2':
-        main_2()
+    if len(sys.argv) > 1 and sys.argv[1] == 'shallow':
+        if len(sys.argv) > 2:
+            lr = float(sys.argv[2])
+            main_1(lr)
+        else:
+            main_1()
+    elif len(sys.argv) > 1 and sys.argv[1] == 'deep':
+        if len(sys.argv) > 2:
+            lr = float(sys.argv[2])
+            main_2(lr)
+        else:
+            main_2()
     else:
-        main_1()
+        if len(sys.argv) > 1:
+            lr = float(sys.argv[1])
+            main_1(lr)
+        else:
+            main_1()
