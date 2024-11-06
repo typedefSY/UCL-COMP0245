@@ -191,9 +191,10 @@ def main_1(lr=0.1):
         axes[i].legend()
     # Adjust layout and save trajectory plot
     plt.tight_layout()
-    if not os.path.exists(f'images/shallow/lr{lr}'):
-        os.makedirs(f'images/shallow/lr{lr}')
-    plt.savefig(f'images/shallow/lr{lr}/trajectories.png')
+    if not os.path.exists(f'images/task1/shallow/lr{lr}'):
+        os.makedirs(f'images/task1/shallow/lr{lr}')
+    #! Uncomment the following line to save the plot
+    # plt.savefig(f'images/task1/shallow/lr{lr}/trajectories.png')
     
     # Log training results
     print("\033[92m=============================== Training/Testing loss ================================\033[0m")
@@ -218,7 +219,8 @@ def main_1(lr=0.1):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(f'images/shallow/lr{lr}/training_test_loss.png')
+    #! Uncomment the following line to save the plot
+    # plt.savefig(f'images/task1/shallow/lr{lr}/training_test_loss.png')
     plt.show()
 
 # Main function for Task 1.2 (Deep MLP with test loss logging and plotting)
@@ -332,9 +334,10 @@ def main_2(lr=0.1):
             index += 1
     # Adjust layout and save trajectory plot
     plt.tight_layout()
-    if not os.path.exists(f'images/deep/lr{lr}'):
-        os.makedirs(f'images/deep/lr{lr}')
-    # plt.savefig(f'images/deep/lr{lr}/trajectories.png')
+    if not os.path.exists(f'images/task1/deep/lr{lr}'):
+        os.makedirs(f'images/task1/deep/lr{lr}')
+    #! Uncomment the following line to save the plot
+    # plt.savefig(f'images/task1/deep/lr{lr}/trajectories.png')
     
     # Log training results
     print("\033[92m=============================== Training/Testing loss ================================\033[0m")
@@ -363,7 +366,8 @@ def main_2(lr=0.1):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(f'images/deep/lr{lr}/training_test_loss.png')
+    #! Uncomment the following line to save the plot
+    # plt.savefig(f'images/task1/deep/lr{lr}/training_test_loss.png')
     plt.show()
 
 if __name__ == '__main__':
