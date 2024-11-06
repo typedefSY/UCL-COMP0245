@@ -113,7 +113,7 @@ def main_1(lr=0.1):
                 loss = criterion(output, target)
                 loss.backward()
                 optimizer.step()
-                epoch_loss += loss.item()
+            epoch_loss += loss.item()
             train_losses.append(epoch_loss / len(train_loader))
             print(f'Epoch {epoch + 1}/{epochs}, Loss: {train_losses[-1]:.6f}')
 
@@ -200,7 +200,7 @@ def main_2(lr=0.1):
                     loss = criterion(output, target)
                     loss.backward()
                     optimizer.step()
-                    epoch_loss += loss.item()
+                epoch_loss += loss.item()
                 train_losses.append(epoch_loss / len(train_loader))
                 print(f'Epoch {epoch + 1}/{epochs}, Loss: {train_losses[-1]:.6f}')
 
