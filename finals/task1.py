@@ -153,9 +153,9 @@ def main_1(lr=0.1):
         axes[i].legend()
     # modify the layout of trajectories plot
     plt.tight_layout()
-    if not os.path.exists(f'images/task1.1/lr{lr}'):
-        os.makedirs(f'images/task1.1/lr{lr}')
-    plt.savefig(f'images/task1.1/lr{lr}/trajectories.png')
+    if not os.path.exists(f'images/shallow/lr{lr}'):
+        os.makedirs(f'images/shallow/lr{lr}')
+    plt.savefig(f'images/shallow/lr{lr}/trajectories.png')
     
     # log results
     print("\033[92m=============================== Training results ================================\033[0m")
@@ -170,7 +170,7 @@ def main_1(lr=0.1):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(f'images/task1.1/lr{lr}/training_loss.png')
+    plt.savefig(f'images/shallow/lr{lr}/training_loss.png')
     plt.show()
 
 def main_2(lr=0.1):
@@ -241,9 +241,9 @@ def main_2(lr=0.1):
             index += 1
     # modify the layout of trajectories plot
     plt.tight_layout()
-    if not os.path.exists(f'images/task1.2/lr{lr}'):
-        os.makedirs(f'images/task1.2/lr{lr}')
-    # plt.savefig(f'images/task1.2/lr{lr}/trajectories.png')
+    if not os.path.exists(f'images/deep/lr{lr}'):
+        os.makedirs(f'images/deep/lr{lr}')
+    # plt.savefig(f'images/deep/lr{lr}/trajectories.png')
     
     # log results
     print("\033[92m=============================== Training results ================================\033[0m")
@@ -259,7 +259,7 @@ def main_2(lr=0.1):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(f'images/task1.2/lr{lr}/training_loss.png')
+    plt.savefig(f'images/deep/lr{lr}/training_loss.png')
     plt.show()
 
 if __name__ == '__main__':
