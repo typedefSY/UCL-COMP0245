@@ -306,6 +306,8 @@ if test_cartesian_accuracy_flag:
     if visualize:
         plt.figure(figsize=(12, 15))
         index = 0
+        position_errors = []  # List to store the position errors for each goal
+
     for goal_position in goal_positions:
         index += 1
         print(index)
@@ -319,13 +321,6 @@ if test_cartesian_accuracy_flag:
         predicted_joint_positions_over_time = np.zeros((len(test_time_array), 7))  # Shape: (num_points, 7)
 
         for joint_idx in range(7):
-            # Instantiate the model
-            #model = MLP()
-            # Load the saved model
-            #model_filename = os.path.join(script_dir, f'neuralq{joint_idx+1}.pt')
-            #model.load_state_dict(torch.load(model_filename))
-            #model.eval()
-
             # Prepare the test input
             test_input_tensor = torch.from_numpy(test_input).float()  # Shape: (num_points, 4)
 
@@ -345,9 +340,10 @@ if test_cartesian_accuracy_flag:
         print(f"Goal position: {goal_position}")
         print(f"Computed cartesian position: {final_cartesian_pos}")
         print(f"Predicted joint positions at final time step: {final_predicted_joint_positions}")
-        
+
         # Compute position error
         position_error = np.linalg.norm(final_cartesian_pos - goal_position)
+        position_errors.append(position_error)  # Store error for later plotting
         print(f"Position error between computed position and goal: {position_error}")
 
         # Optional: Visualize the cartesian trajectory over time
@@ -373,7 +369,21 @@ if test_cartesian_accuracy_flag:
             plt.title('Predicted Cartesian Positions Over Time')
             plt.legend()
             plt.grid(True)
-    plt.tight_layout()
-    ensure_dir(f'images/task21/test_results/')
-    plt.savefig(f'images/task21/test_results/cartesian_positions_over_time.png')
-    plt.show()
+
+    if visualize:
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0.3)
+        ensure_dir('images/task21/test_results')
+        plt.savefig(f'images/task21/test_results/cartesian_positions_over_time.png')
+        plt.show()
+
+        # Plot the position errors for each goal position
+        plt.figure(figsize=(12, 5))
+        plt.bar(range(1, len(position_errors) + 1), position_errors, color='skyblue')
+        plt.xlabel('Goal Position Index')
+        plt.ylabel('Position Error (m)')
+        plt.title('Position Errors for Each Goal Position')
+        plt.xticks(range(1, len(goal_positions) + 1))
+        plt.grid(True)
+        plt.savefig(f'images/task21/test_results/position_errors.png')
+        plt.show()
