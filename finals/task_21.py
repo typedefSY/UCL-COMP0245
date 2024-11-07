@@ -171,7 +171,7 @@ if training_flag:
                 print(f'Visualizing results for Joint {joint_idx+1}...')
 
                 # Plot training and test loss over epochs
-                plt.figure(figsize=(10, 5))
+                plt.subplot(4, 2, joint_idx + 1)
                 plt.plot(range(1, epochs + 1), train_losses, label='Training Loss')
                 plt.plot(range(1, epochs + 1), test_losses, label='Test Loss')
                 plt.xlabel('Epoch')
