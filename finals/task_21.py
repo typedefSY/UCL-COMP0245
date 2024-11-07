@@ -109,7 +109,7 @@ if training_flag:
 
         # Training parameters
         epochs = 500
-        learning_rate = 0.01
+        learning_rate = 0.0001
         
         if visualize:
             plt.figure(figsize=(12, 12))
@@ -182,7 +182,7 @@ if training_flag:
         if visualize:
             plt.tight_layout()
             ensure_dir('images/task21/training')
-            plt.savefig(f'images/task21/training/log.png')
+            plt.savefig(f'images/task21/training/loss.png')
             plt.show()
 
         # Test the models on the test set
