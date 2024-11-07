@@ -10,8 +10,12 @@ import matplotlib.pyplot as plt
 
 # Set the visualization flag
 visualize = True  # Set to True to enable visualization, False to disable
-training_flag = True  # Set to True to train the models, False to skip training
+training_flag = False  # Set to True to train the models, False to skip training
 test_cartesian_accuracy_flag = True  # Set to True to test the model with a new goal position, False to skip testing
+
+def ensure_dir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 # MLP Model Definition
 class JointAngleRegressor(nn.Module):
@@ -299,8 +303,12 @@ if test_cartesian_accuracy_flag:
     init_cartesian_pos, init_R = dyn_model.ComputeFK(init_joint_angles, controlled_frame_name)
     print(f"Initial joint angles: {init_joint_angles}")
 
-
+    if visualize:
+        plt.figure(figsize=(12, 15))
+        index = 0
     for goal_position in goal_positions:
+        index += 1
+        print(index)
         print("Testing new goal position------------------------------------")
 
         # Create test input features
@@ -353,26 +361,19 @@ if test_cartesian_accuracy_flag:
             cartesian_positions_over_time = np.array(cartesian_positions_over_time)  # Shape: (num_points, 3)
 
             # Plot x, y, z positions over time
-            plt.figure(figsize=(10, 5))
+            plt.subplot(5, 2, index)
             plt.plot(test_time_array, cartesian_positions_over_time[:, 0], label='X Position')
             plt.plot(test_time_array, cartesian_positions_over_time[:, 1], label='Y Position')
             plt.plot(test_time_array, cartesian_positions_over_time[:, 2], label='Z Position')
+            plt.scatter(test_time_array[-1], goal_position[0], color='red', s=20, label='X Goal Position')
+            plt.scatter(test_time_array[-1], goal_position[1], color='green', s=20, label='Y Goal Position')
+            plt.scatter(test_time_array[-1], goal_position[2], color='blue', s=20, label='Z Goal Position')
             plt.xlabel('Time (s)')
             plt.ylabel('Cartesian Position (m)')
             plt.title('Predicted Cartesian Positions Over Time')
             plt.legend()
             plt.grid(True)
-            plt.show()
-
-            # Plot the trajectory in 3D space
-            from mpl_toolkits.mplot3d import Axes3D
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax.plot(cartesian_positions_over_time[:, 0], cartesian_positions_over_time[:, 1], cartesian_positions_over_time[:, 2], label='Predicted Trajectory')
-            ax.scatter(goal_position[0], goal_position[1], goal_position[2], color='red', label='Goal Position')
-            ax.set_xlabel('X Position (m)')
-            ax.set_ylabel('Y Position (m)')
-            ax.set_zlabel('Z Position (m)')
-            ax.set_title('Predicted Cartesian Trajectory')
-            plt.legend()
-            plt.show()
+    plt.tight_layout()
+    ensure_dir(f'images/task21/test_results/')
+    plt.savefig(f'images/task21/test_results/cartesian_positions_over_time.png')
+    plt.show()
