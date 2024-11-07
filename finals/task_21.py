@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 # Set the visualization flag
 visualize = True  # Set to True to enable visualization, False to disable
-training_flag = False  # Set to True to train the models, False to skip training
+training_flag = True  # Set to True to train the models, False to skip training
 test_cartesian_accuracy_flag = True  # Set to True to test the model with a new goal position, False to skip testing
 
 def ensure_dir(directory):
@@ -107,12 +107,12 @@ if training_flag:
             train_loaders.append(train_loader)
             test_loaders.append(test_loader)
 
-        
-
         # Training parameters
         epochs = 500
         learning_rate = 0.01
-
+        
+        if visualize:
+            plt.figure(figsize=(12, 12))
         for joint_idx in range(7):
 
             # The name of the saved model
@@ -129,27 +129,21 @@ if training_flag:
             model = JointAngleRegressor()
             criterion = nn.MSELoss()
             optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-
             train_loader = train_loaders[joint_idx]
             test_loader = test_loaders[joint_idx]
-
             train_losses = []
             test_losses = []
 
-            # Training loop
             for epoch in range(epochs):
                 model.train()
                 epoch_loss = 0
-
                 for data, target in train_loader:
                     optimizer.zero_grad()
                     output = model(data)
                     loss = criterion(output, target)
                     loss.backward()
                     optimizer.step()
-
                     epoch_loss += loss.item()
-
                 train_loss = epoch_loss / len(train_loader)
                 train_losses.append(train_loss)
 
@@ -169,9 +163,6 @@ if training_flag:
 
             # Final evaluation on test set
             print(f'Final Test Loss for Joint {joint_idx+1}: {test_losses[-1]:.6f}')
-
-            # Save the trained model
-            model_filename = os.path.join(script_dir, f'neuralq{joint_idx+1}.pt')
             torch.save(model.state_dict(), model_filename)
             print(f'Model for Joint {joint_idx+1} saved as {model_filename}')
 
@@ -188,25 +179,34 @@ if training_flag:
                 plt.title(f'Loss Curve for Joint {joint_idx+1}')
                 plt.legend()
                 plt.grid(True)
-                plt.show()
+        if visualize:
+            plt.tight_layout()
+            ensure_dir('images/task21/training')
+            plt.savefig(f'images/task21/training/log.png')
+            plt.show()
 
-                # Plot true vs predicted positions on the test set
-                model.eval()
-                with torch.no_grad():
-                    x_test_time = x_test_list[joint_idx]
-                    y_test = y_test_list[joint_idx]
-                    goal_test = goal_test_list[joint_idx]
-                    x_test = np.hstack((x_test_time.reshape(-1, 1), goal_test))
-                    x_test_tensor = torch.from_numpy(x_test).float()
-                    predictions = model(x_test_tensor).numpy().flatten()
+        # Test the models on the test set
+        if visualize:
+            plt.figure(figsize=(12, 12))
+        for joint_idx in range(7):
+            model_filename = os.path.join(script_dir, f'neuralq{joint_idx+1}.pt')
+            model.load_state_dict(torch.load(model_filename))
+            model.eval()
+            with torch.no_grad():
+                x_test_time = x_test_list[joint_idx]
+                y_test = y_test_list[joint_idx]
+                goal_test = goal_test_list[joint_idx]
+                x_test = np.hstack((x_test_time.reshape(-1, 1), goal_test))
+                x_test_tensor = torch.from_numpy(x_test).float()
+                predictions = model(x_test_tensor).numpy().flatten()
 
-                # Sort the test data for better visualization
-                sorted_indices = np.argsort(x_test_time)
-                x_test_time_sorted = x_test_time[sorted_indices]
-                y_test_sorted = y_test[sorted_indices]
-                predictions_sorted = predictions[sorted_indices]
-
-                plt.figure(figsize=(10, 5))
+            sorted_indices = np.argsort(x_test_time)
+            x_test_time_sorted = x_test_time[sorted_indices]
+            y_test_sorted = y_test[sorted_indices]
+            predictions_sorted = predictions[sorted_indices]
+            
+            if visualize:
+                plt.subplot(4, 2, joint_idx + 1)
                 plt.plot(x_test_time_sorted, y_test_sorted, label='True Joint Positions')
                 plt.plot(x_test_time_sorted, predictions_sorted, label='Predicted Joint Positions', linestyle='--')
                 plt.xlabel('Time (s)')
@@ -214,9 +214,13 @@ if training_flag:
                 plt.title(f'Joint {joint_idx+1} Position Prediction on Test Set')
                 plt.legend()
                 plt.grid(True)
-                plt.show()
+        if visualize:
+            plt.tight_layout()
+            ensure_dir('images/task21/training')
+            plt.savefig(f'images/task21/training/test_position.png')
+            plt.show()
 
-        print("Training and visualization completed.")
+    print("Training/Validation and visualization completed.")
 
 if test_cartesian_accuracy_flag:
 
