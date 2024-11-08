@@ -9,3 +9,9 @@ images/
 
 # ignore py cache
 __pycache__/
+
+# ignore the model files
+*.pt
+
+# ignore the model files
+*.joblib
