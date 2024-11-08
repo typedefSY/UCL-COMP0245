@@ -91,12 +91,12 @@ def ensure_dir(directory):
 
 def generate_heatmap(data, x_labels, y_labels, title, filename):
     plt.figure(figsize=(10, 8))
-    sns.heatmap(data, annot=True, cmap='coolwarm', xticklabels=x_labels, yticklabels=y_labels, fmt=".4f")
+    sns.heatmap(data, annot=True, cmap='coolwarm', xticklabels=x_labels, yticklabels=y_labels, fmt=".5f")
     plt.title(title)
     plt.xlabel('Learning Rates')
     plt.ylabel('Hidden Layer Sizes')
     plt.savefig(filename)
-    plt.close()
+    plt.show()
 
 def main(model_type='deep'):
     device = torch.device("cpu")
