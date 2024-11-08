@@ -108,8 +108,8 @@ if training_flag:
             test_loaders.append(test_loader)
 
         # Training parameters
-        epochs = 500
-        learning_rate = 0.0001
+        epochs = 1000
+        learning_rate = 0.01
         
         if visualize:
             plt.figure(figsize=(12, 12))
@@ -189,6 +189,7 @@ if training_flag:
         if visualize:
             plt.figure(figsize=(12, 12))
         for joint_idx in range(7):
+            model = JointAngleRegressor()
             model_filename = os.path.join(script_dir, f'neuralq{joint_idx+1}.pt')
             model.load_state_dict(torch.load(model_filename))
             model.eval()
