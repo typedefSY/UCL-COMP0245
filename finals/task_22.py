@@ -18,7 +18,7 @@ def ensure_dir(directory):
 
 def generate_heatmap(data, x_labels, y_labels, title, filename):
     plt.figure(figsize=(10, 8))
-    sns.heatmap(data, annot=True, cmap='coolwarm', xticklabels=x_labels, yticklabels=y_labels, fmt=".3f")
+    sns.heatmap(data, annot=True, cmap='coolwarm', xticklabels=x_labels, yticklabels=y_labels, fmt=".4f")
     plt.title(title)
     plt.xlabel('Max Depth')
     plt.ylabel('Joint Index')
