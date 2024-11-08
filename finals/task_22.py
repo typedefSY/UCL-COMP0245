@@ -11,6 +11,10 @@ visualize = True  # Set to True to enable visualization, False to disable
 training_flag = True  # Set to True to train the models, False to skip training
 test_cartesian_accuracy_flag = True  # Set to True to test the model with a new goal position, False to skip testing
 
+def ensure_dir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 if training_flag:
     # Load the saved data
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,6 +46,8 @@ if training_flag:
         x_test_list = []
         y_train_list = []
         y_test_list = []
+        train_mse_list = []
+        test_mse_list = []
 
         for joint_idx in range(7):
             # Extract joint data
@@ -58,10 +64,12 @@ if training_flag:
             y_train_list.append(y_train)
             y_test_list.append(y_test)
 
+            #! Change the max_depth value to optimize the model, None for default
+            max_depth = 2
             # Initialize the Random Forest regressor
             rf_model = RandomForestRegressor(
                 n_estimators=100,    # Number of trees
-                max_depth=None,        # Maximum depth of the tree
+                max_depth=max_depth,        # Maximum depth of the tree
                 random_state=42,
                 n_jobs=-1            # Use all available cores
             )
@@ -72,39 +80,74 @@ if training_flag:
             # Evaluate on training set
             y_train_pred = rf_model.predict(X_train)
             train_mse = np.mean((y_train - y_train_pred) ** 2)
+            train_mse_list.append(train_mse) 
 
             # Evaluate on test set
             y_test_pred = rf_model.predict(X_test)
             test_mse = np.mean((y_test - y_test_pred) ** 2)
+            test_mse_list.append(test_mse)
 
-            print(f'\nJoint {joint_idx+1}')
-            print(f'Train MSE: {train_mse:.6f}')
-            print(f'Test MSE: {test_mse:.6f}')
+            #print(f'\nJoint {joint_idx+1}')
+            #print(f'Train MSE: {train_mse:.6f}')
+            #print(f'Test MSE: {test_mse:.6f}')
 
             # Save the trained model
-            model_filename = os.path.join(script_dir, f'rf_joint{joint_idx+1}.joblib')
+            model_filename = os.path.join(script_dir, f'rf_joint{joint_idx+1}_md{max_depth}.joblib')
             joblib.dump(rf_model, model_filename)
             print(f'Model for Joint {joint_idx+1} saved as {model_filename}')
 
-            # Visualization (if enabled)
-            if visualize:
-                print(f'Visualizing results for Joint {joint_idx+1}...')
+        joint_indices = range(1, 8)
 
-                # Plot true vs predicted positions on the test set
-                sorted_indices = np.argsort(X_test[:, 0])
-                X_test_sorted = X_test[sorted_indices]
-                y_test_sorted = y_test[sorted_indices]
-                y_test_pred_sorted = y_test_pred[sorted_indices]
+        plt.figure(figsize=(10, 6))
+        bar_width = 0.35
+        index = np.arange(len(joint_indices))
 
-                plt.figure(figsize=(10, 5))
-                plt.plot(X_test_sorted[:, 0], y_test_sorted, label='True Joint Positions')
-                plt.plot(X_test_sorted[:, 0], y_test_pred_sorted, label='Predicted Joint Positions', linestyle='--')
-                plt.xlabel('Time (s)')
-                plt.ylabel('Joint Position (rad)')
-                plt.title(f'Joint {joint_idx+1} Position Prediction on Test Set')
-                plt.legend()
-                plt.grid(True)
-                plt.show()
+        plt.bar(index, train_mse_list, bar_width, label='Train MSE', color='blue')
+        plt.bar(index + bar_width, test_mse_list, bar_width, label='Test MSE', color='orange')
+
+        plt.xlabel('Joint Index')
+        plt.ylabel('Mean Squared Error (MSE)')
+        plt.title('Training and Testing MSE for Each Joint')
+        plt.xticks(index + bar_width / 2, [f'Joint {i}' for i in joint_indices])
+        plt.legend()
+        plt.grid(True)
+
+        ensure_dir('images/task22/mse_results')
+        plt.savefig(f'images/task22/mse_results/train_test_mse_comparison_md{max_depth}.png')
+        plt.show()
+
+
+        if visualize:
+            plt.figure(figsize=(12, 12))
+        for joint_idx in range(7):
+            print(f'Visualizing results for Joint {joint_idx+1}...')
+
+            model_filename = os.path.join(script_dir, f'rf_joint{joint_idx+1}_md{max_depth}.joblib')
+            rf_model = joblib.load(model_filename)
+
+            X_test = x_test_list[joint_idx]
+            y_test = y_test_list[joint_idx]
+            y_test_pred = rf_model.predict(X_test)
+
+            sorted_indices = np.argsort(X_test[:, 0])
+            X_test_sorted = X_test[sorted_indices]
+            y_test_sorted = y_test[sorted_indices]
+            y_test_pred_sorted = y_test_pred[sorted_indices]
+
+            plt.subplot(4, 2, joint_idx + 1)
+            plt.plot(X_test_sorted[:, 0], y_test_sorted, label='True Joint Positions')
+            plt.plot(X_test_sorted[:, 0], y_test_pred_sorted, label='Predicted Joint Positions', linestyle='--')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Joint Position (rad)')
+            plt.title(f'Joint {joint_idx+1} Position Prediction on Test Set')
+            plt.legend()
+            plt.grid(True)
+
+        plt.tight_layout()
+
+        ensure_dir('images/task22/training')
+        plt.savefig(f'images/task22/training/test_position_md{max_depth}.png')
+        plt.show()
 
         print("Training and visualization completed.")
 
@@ -133,7 +176,7 @@ if test_cartesian_accuracy_flag:
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
         # The name of the saved model
-        model_filename = os.path.join(script_dir, f'rf_joint{joint_idx+1}.joblib')
+        model_filename = os.path.join(script_dir, f'rf_joint{joint_idx+1}_md{max_depth}.joblib')
 
         try:
             rf_model = joblib.load(model_filename)
@@ -190,9 +233,15 @@ if test_cartesian_accuracy_flag:
     init_cartesian_pos, init_R = dyn_model.ComputeFK(init_joint_angles, controlled_frame_name)
     print(f"Initial joint angles: {init_joint_angles}")
 
+    if visualize:
+            plt.figure(figsize=(12, 15))
+            index = 0
+            position_errors = []  # List to store the position errors for each goal
+
     for goal_position in goal_positions:
+        index += 1
+        print(index)
         print("\nTesting new goal position------------------------------------")
-        print(f"Goal position: {goal_position}")
 
         # Create test input features
         test_goal_positions = np.tile(goal_position, (len(test_time_array), 1))  # Shape: (100, 3)
@@ -218,7 +267,8 @@ if test_cartesian_accuracy_flag:
 
         # Compute position error
         position_error = np.linalg.norm(final_cartesian_pos - goal_position)
-        print(f"Position error between computed position and goal: {position_error}")
+        position_errors.append(position_error)  # Store error for later plotting
+        print(f"Position error between computed position and goal: {position_errors}")
 
         # Optional: Visualize the cartesian trajectory over time
         if visualize:
@@ -230,27 +280,35 @@ if test_cartesian_accuracy_flag:
 
             cartesian_positions_over_time = np.array(cartesian_positions_over_time)  # Shape: (num_points, 3)
 
-            # Plot x, y, z positions over time
-            plt.figure(figsize=(10, 5))
+            # Plot x, y, z positions over time in the current subplot
+            plt.subplot(5, 2, index)
             plt.plot(test_time_array, cartesian_positions_over_time[:, 0], label='X Position')
             plt.plot(test_time_array, cartesian_positions_over_time[:, 1], label='Y Position')
             plt.plot(test_time_array, cartesian_positions_over_time[:, 2], label='Z Position')
+            plt.scatter(test_time_array[-1], goal_position[0], color='red', s=20, label='X Goal Position')
+            plt.scatter(test_time_array[-1], goal_position[1], color='green', s=20, label='Y Goal Position')
+            plt.scatter(test_time_array[-1], goal_position[2], color='blue', s=20, label='Z Goal Position')
             plt.xlabel('Time (s)')
             plt.ylabel('Cartesian Position (m)')
-            plt.title('Predicted Cartesian Positions Over Time')
+            plt.title(f'Predicted Cartesian Positions for Goal Position {index + 1}')
             plt.legend()
             plt.grid(True)
-            plt.show()
+            
 
-            # Plot the trajectory in 3D space
-            from mpl_toolkits.mplot3d import Axes3D
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax.plot(cartesian_positions_over_time[:, 0], cartesian_positions_over_time[:, 1], cartesian_positions_over_time[:, 2], label='Predicted Trajectory')
-            ax.scatter(goal_position[0], goal_position[1], goal_position[2], color='red', label='Goal Position')
-            ax.set_xlabel('X Position (m)')
-            ax.set_ylabel('Y Position (m)')
-            ax.set_zlabel('Z Position (m)')
-            ax.set_title('Predicted Cartesian Trajectory')
-            plt.legend()
-            plt.show()
+    if visualize:
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0.3)
+        ensure_dir('images/task22/test_results')
+        plt.savefig(f'images/task22/test_results/cartesian_positions_over_time_md{max_depth}.png')
+        plt.show()
+
+        # Plot the position errors for each goal position
+        plt.figure(figsize=(12, 5))
+        plt.bar(range(1, len(position_errors) + 1), position_errors, color='skyblue')
+        plt.xlabel('Goal Position Index')
+        plt.ylabel('Position Error (m)')
+        plt.title('Position Errors for Each Goal Position')
+        plt.xticks(range(1, len(goal_positions) + 1))
+        plt.grid(True)
+        plt.savefig(f'images/task22/test_results/position_errors_md{max_depth}.png')
+        plt.show()
