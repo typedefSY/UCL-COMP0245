@@ -90,6 +90,94 @@ def generate_heatmap(data, x_labels, y_labels, title, filename):
     plt.ylabel('Hidden Layer Sizes')
     plt.savefig(filename)
     plt.show()
+    
+def batch_size_evaluate(model_type='shallow'):
+    device = torch.device("cpu")
+    learning_rate = 0.001
+    hidden_size = 32
+    epochs = 500
+    batch_sizes = [32, 64, 128, 256, 1000]
+    results = {}
+    
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+    X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+    Y_train_tensor = torch.tensor(Y_train, dtype=torch.float32).view(-1, 1)
+    X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
+    Y_test_tensor = torch.tensor(Y_test, dtype=torch.float32).view(-1, 1)
+    train_dataset = TensorDataset(X_train_tensor, Y_train_tensor)
+    test_dataset = TensorDataset(X_test_tensor, Y_test_tensor)
+    
+    for batch_size in batch_sizes:
+        print(f'Training with batch size {batch_size}')
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        
+        if model_type == 'shallow':
+            model = ShallowMLP(hidden_size=hidden_size).to(device)
+        else:
+            model = DeepMLP(hidden_size=hidden_size).to(device)
+        
+        criterion = nn.MSELoss()
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        
+        train_losses = []
+        test_losses = []
+        
+        for epoch in range(epochs):
+            model.train()
+            epoch_loss = 0
+            for data, target in train_loader:
+                data, target = data.to(device), target.to(device)
+                optimizer.zero_grad()
+                output = model(data)
+                loss = criterion(output, target)
+                loss.backward()
+                optimizer.step()
+                epoch_loss += loss.item()
+            avg_train_loss = epoch_loss / len(train_loader)
+            train_losses.append(avg_train_loss)
+            
+            model.eval()
+            test_loss = 0
+            with torch.no_grad():
+                for data, target in test_loader:
+                    data, target = data.to(device), target.to(device)
+                    output = model(data)
+                    loss = criterion(output, target)
+                    test_loss += loss.item()
+            avg_test_loss = test_loss / len(test_loader)
+            test_losses.append(avg_test_loss)
+            
+            print(f'Epoch {epoch+1}/{epochs}, Batch Size {batch_size}, Train Loss: {avg_train_loss:.6f}, Test Loss: {avg_test_loss:.6f}')
+        
+        results[batch_size] = {'train_losses': train_losses, 'test_losses': test_losses}
+    
+    # Prepare data for heatmap
+    batch_size_list = batch_sizes
+    train_loss_matrix = np.array([results[bs]['train_losses'] for bs in batch_size_list])
+    test_loss_matrix = np.array([results[bs]['test_losses'] for bs in batch_size_list])
+    
+    # Generate heatmaps
+    ensure_dir(f'images/task1/{model_type}')
+    plt.figure(figsize=(15, 6))
+    
+    # Training loss heatmap
+    plt.subplot(1, 2, 1)
+    sns.heatmap(train_loss_matrix, cmap='viridis', cbar=True, xticklabels=50, yticklabels=batch_size_list)
+    plt.title(f'{model_type.capitalize()} MLP Training Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Batch Size')
+    
+    # Testing loss heatmap
+    plt.subplot(1, 2, 2)
+    sns.heatmap(test_loss_matrix, cmap='viridis', cbar=True, xticklabels=50, yticklabels=batch_size_list)
+    plt.title(f'{model_type.capitalize()} MLP Testing Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Batch Size')
+    
+    plt.tight_layout()
+    plt.savefig(f'images/task1/{model_type}/batch_size_loss.png')
+    plt.show()
 
 def main(model_type='shallow'):
     device = torch.device("cpu")
@@ -221,8 +309,11 @@ def main(model_type='shallow'):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'shallow':
-            main()
+        main()
+        batch_size_evaluate('shallow')
     elif len(sys.argv) > 1 and sys.argv[1] == 'deep':
         main('deep')
+        batch_size_evaluate('deep')
     else:
         main()
+        batch_size_evaluate('shallow')
