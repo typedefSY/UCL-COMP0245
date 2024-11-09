@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import os, sys
 import seaborn as sns
 
-#! Change to 'cuda' if you are using Nvidia, change to mps if you are using Mac, otherwise 'cpu'
+#! Change to 'cuda' if you are using Nvidia; Change to mps if you are using Mac; Otherwise 'cpu'
 device = torch.device("cpu" if torch.backends.mps.is_available() else "cpu")
 
 # Constants
@@ -34,11 +34,11 @@ for i in range(num_samples):
     # PD control output
     tau = k_p * (q_target[i] - q) + k_d * (dot_q_target[i] - dot_q)
     # Ideal motor dynamics (variable mass for realism)
-    #m_real = m * (1 + 0.1 * np.random.randn())  # Mass varies by +/-10%
-    ddot_q_real = (tau - b * dot_q) / m
+    m_real = m * (1 + 0.1 * np.random.randn())  # Mass varies by +/-10%
+    ddot_q_real = (tau - b * dot_q) / m_real
     
     # Calculate error
-    ddot_q_ideal = (tau) / m
+    ddot_q_ideal = (tau) / m_real
     ddot_q_error = ddot_q_ideal - ddot_q_real
     
     # Store data
