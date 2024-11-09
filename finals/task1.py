@@ -51,9 +51,9 @@ X_tensor = torch.tensor(X, dtype=torch.float32)
 Y_tensor = torch.tensor(Y, dtype=torch.float32).view(-1, 1)
 
 # Define a shallow MLP model, 1 hidden layers
-class MLP(nn.Module):
+class ShallowMLP(nn.Module):
     def __init__(self, hidden_size):
-        super(MLP, self).__init__()
+        super(ShallowMLP, self).__init__()
         self.layers = nn.Sequential(
             nn.Linear(4, hidden_size),
             nn.ReLU(),
@@ -112,7 +112,7 @@ def main(model_type='shallow'):
             train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
             test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
             if model_type == 'shallow':
-                model = MLP(hidden_size=hidden_size).to(device)
+                model = ShallowMLP(hidden_size=hidden_size).to(device)
             else:
                 model = DeepMLP(hidden_size=hidden_size).to(device)
             criterion = nn.MSELoss()
