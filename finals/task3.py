@@ -19,7 +19,7 @@ import joblib  # For saving and loading models
 # Note that "random_forest_smooth" means random forest with smooth filtering
 # md stands for max_depth
 test_models = ["neural_network","random_forest_md2","random_forest_md10"] # For task 3.1 and 3.2
-#test_models = ["random_forest_md2", "random_forest_smooth_md2","random_forest_md10", "random_forest_smooth_md10"] # For task 3.3
+#test_models = ["neural_network","random_forest_md10", "random_forest_smooth_md10"] # For task 3.3
 
 # MLP Model Definition
 class MLP(nn.Module):
@@ -84,7 +84,7 @@ def main():
     controlled_frame_name = "panda_link8"
     init_joint_angles = sim.GetInitMotorAngles()
     init_cartesian_pos, init_R = dyn_model.ComputeFK(init_joint_angles, controlled_frame_name)
-    print(f"Initial joint angles: {init_joint_angles}")
+    #print(f"Initial joint angles: {init_joint_angles}")
 
     # Command and control loop
     cmd = MotorCommands()  # Initialize command structure for motors
@@ -111,7 +111,7 @@ def main():
         tau_cmd_all_for_all_models = []
         for test_model in test_models:
             neural_network_or_random_forest = test_model
-            print(f"Testing new goal position for {test_model}-------------------")
+            #print(f"Testing new goal position for {test_model}-------------------")
             
             # Load all the models in a list
             models = []
@@ -243,15 +243,15 @@ def main():
             # After the trajectory, compute the final cartesian position
             final_predicted_joint_positions = predicted_joint_positions_over_time[-1, :]  # Shape: (7,)
             final_cartesian_pos, final_R = dyn_model.ComputeFK(final_predicted_joint_positions, controlled_frame_name)
-            print(f"Final computed cartesian position: {final_cartesian_pos}")
+            #print(f"Final computed cartesian position: {final_cartesian_pos}")
             # Compute position error
             position_error = np.linalg.norm(final_cartesian_pos - goal_position)
-            print(f"Position error between computed position and goal: {position_error}")
+            print(f"Position error between computed position and goal for {test_model}: {position_error}")
 
             q_mes_all_for_all_models.append(q_mes_all)
             q_des_all_for_all_models.append(q_des_all)
             tau_cmd_all_for_all_models.append(tau_cmd_all)
-            print(f"Finished testing model: {neural_network_or_random_forest}-----------")
+            #print(f"Finished testing model: {neural_network_or_random_forest}-----------")
 
         # # Plot the measured trajectory for all models
         # q_mes_all_for_all_models = np.array(q_mes_all_for_all_models)
@@ -265,32 +265,20 @@ def main():
         #     plt.ylabel('Joint Position')
         #     plt.legend()
         #     plt.show()
-        
-        # Plot the predicted trajectory for all models
-        q_pred_all_for_all_models = np.array(q_pred_all_for_all_models)
-        for i in range(num_joints):
-            plt.figure(figsize=(12, 6))
-            # Plot the predicted idx i joint position for all models
-            for j, test_model in enumerate(test_models):
-                plt.plot(test_time_array, q_pred_all_for_all_models[j][:, i], label=f'Predicted Joint {i+1} - {test_model}')
-            plt.title(f'Predicted Joint{i} Positions')
-            plt.xlabel('Time [s]')
-            plt.ylabel('Joint Position')
-            plt.legend()
-            plt.show()
 
-        # Plot the predicted joint velocities for all models
-        qd_pred_all_for_all_models = np.array(qd_pred_all_for_all_models)
+        # Plot the actual trajectory vs the predicted trajectory for all models
+        q_mes_all_for_all_models = np.array(q_mes_all_for_all_models)
         for i in range(num_joints):
-            plt.figure(figsize=(12, 6))
-            # Plot the predicted idx i joint velocity for all models
+            # Plot the actual and predicted idx i joint position for all models
             for j, test_model in enumerate(test_models):
-                plt.plot(test_time_array, qd_pred_all_for_all_models[j][:, i], label=f'Predicted Joint {i+1} - {test_model}')
-            plt.title(f'Predicted Joint{i+1} Velocities')
-            plt.xlabel('Time [s]')
-            plt.ylabel('Joint Velocity')
-            plt.legend()
-            plt.show()
+                plt.figure(figsize=(12, 6))
+                plt.plot(test_time_array, q_pred_all_for_all_models[j][:, i], label=f'Predicted Joint {i+1} - {test_model}')
+                plt.plot(time_mes_all, q_mes_all_for_all_models[j][:, i], label=f'Measured Joint {i+1} - {test_model}')
+                plt.title(f'Predicted vs Measured Joint{i+1} Positions')
+                plt.xlabel('Time [s]')
+                plt.ylabel('Joint Position')
+                plt.legend()
+                plt.show()
 
         # Plot the tracking error for all models
         for i in range(num_joints):
@@ -326,6 +314,31 @@ def main():
             plt.legend()
             plt.show()
 
+        # Plot the predicted trajectory for all models
+        q_pred_all_for_all_models = np.array(q_pred_all_for_all_models)
+        for i in range(num_joints):
+            plt.figure(figsize=(12, 6))
+            # Plot the predicted idx i joint position for all models
+            for j, test_model in enumerate(test_models):
+                plt.plot(test_time_array, q_pred_all_for_all_models[j][:, i], label=f'Predicted Joint {i+1} - {test_model}')
+            plt.title(f'Predicted Joint{i+1} Positions')
+            plt.xlabel('Time [s]')
+            plt.ylabel('Joint Position')
+            plt.legend()
+            plt.show()
+
+        # Plot the predicted joint velocities for all models
+        qd_pred_all_for_all_models = np.array(qd_pred_all_for_all_models)
+        for i in range(num_joints):
+            plt.figure(figsize=(12, 6))
+            # Plot the predicted idx i joint velocity for all models
+            for j, test_model in enumerate(test_models):
+                plt.plot(test_time_array, qd_pred_all_for_all_models[j][:, i], label=f'Predicted Joint {i+1} - {test_model}')
+            plt.title(f'Predicted Joint{i+1} Velocities')
+            plt.xlabel('Time [s]')
+            plt.ylabel('Joint Velocity')
+            plt.legend()
+            plt.show()
         
 if __name__ == '__main__':
     main()
