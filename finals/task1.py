@@ -8,9 +8,6 @@ import matplotlib.pyplot as plt
 import os, sys
 import seaborn as sns
 
-#! Change to 'cuda' if you are using Nvidia; Change to mps if you are using Mac; Otherwise 'cpu'
-device = torch.device("cpu" if torch.backends.mps.is_available() else "cpu")
-
 # Constants
 m = 1.0  # Mass (kg)
 b = 10  # Friction coefficient
@@ -53,14 +50,12 @@ for i in range(num_samples):
 X_tensor = torch.tensor(X, dtype=torch.float32)
 Y_tensor = torch.tensor(Y, dtype=torch.float32).view(-1, 1)
 
-# Define a deep MLP model, 2 hidden layers
+# Define a shallow MLP model, 1 hidden layers
 class MLP(nn.Module):
     def __init__(self, hidden_size):
         super(MLP, self).__init__()
         self.layers = nn.Sequential(
             nn.Linear(4, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, 1)
         )
@@ -68,14 +63,12 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-# Define the Deeper CorrectorMLP model, 3 hidden layers
-class DeeperMLP(nn.Module):
+# Define the Deep CorrectorMLP model, 2 hidden layers
+class DeepMLP(nn.Module):
     def __init__(self, hidden_size):
-        super(DeeperMLP, self).__init__()
+        super(DeepMLP, self).__init__()
         self.layers = nn.Sequential(
             nn.Linear(4, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
@@ -98,7 +91,7 @@ def generate_heatmap(data, x_labels, y_labels, title, filename):
     plt.savefig(filename)
     plt.show()
 
-def main(model_type='deep'):
+def main(model_type='shallow'):
     device = torch.device("cpu")
     learning_rates = [0.0001, 0.001, 0.01, 0.1, 1]
     hidden_sizes = [32, 64, 96, 128]
@@ -118,10 +111,10 @@ def main(model_type='deep'):
         for hidden_size in hidden_sizes:
             train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
             test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-            if model_type == 'deep':
+            if model_type == 'shallow':
                 model = MLP(hidden_size=hidden_size).to(device)
             else:
-                model = DeeperMLP(hidden_size=hidden_size).to(device)
+                model = DeepMLP(hidden_size=hidden_size).to(device)
             criterion = nn.MSELoss()
             optimizer = optim.Adam(model.parameters(), lr=lr)
             train_losses = []
@@ -221,13 +214,15 @@ def main(model_type='deep'):
         plt.close()
 
     # Generate heatmap for final test losses
-    heatmap_data = np.array([[results[lr][hs]['test_losses'][-1] for lr in learning_rates] for hs in hidden_sizes])
+    heatmap_data = np.array([
+            [np.mean(results[lr][hs]['test_losses'][-10:]) for lr in learning_rates] for hs in hidden_sizes
+        ])
     generate_heatmap(heatmap_data, y_labels=hidden_sizes, x_labels=learning_rates, title="Final Test Loss Heatmap", filename=f"images/task1/{model_type}/final_test_loss_heatmap.png")
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == 'deep':
+    if len(sys.argv) > 1 and sys.argv[1] == 'shallow':
             main()
-    elif len(sys.argv) > 1 and sys.argv[1] == 'deeper':
-        main('deeper')
+    elif len(sys.argv) > 1 and sys.argv[1] == 'deep':
+        main('deep')
     else:
         main()
