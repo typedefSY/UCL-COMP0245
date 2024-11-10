@@ -2,12 +2,10 @@ import numpy as np
 import time
 import os
 import matplotlib.pyplot as plt
-from simulation_and_control import pb, MotorCommands, PinWrapper, feedback_lin_ctrl, SinusoidalReference, CartesianDiffKin
-import threading
+from simulation_and_control import pb, MotorCommands, PinWrapper, feedback_lin_ctrl
 import pickle
 import torch.nn as nn
 import torch
-from sklearn.ensemble import RandomForestRegressor
 import joblib  # For saving and loading models
 
 # /* Deprecated Codes */
